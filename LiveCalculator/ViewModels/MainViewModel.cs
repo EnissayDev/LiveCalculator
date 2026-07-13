@@ -104,7 +104,8 @@ public class MainViewModel : INotifyPropertyChanged
             CurrentStarsText = result.CurrentStars.ToString("0.00", CultureInfo.InvariantCulture);
             MaxStarsText = result.MaxStars.ToString("0.00", CultureInfo.InvariantCulture);
             PpText = result.Pp.ToString("0", CultureInfo.InvariantCulture);
-            StarBrush = new SolidColorBrush(StarRatingColour.ForStars(result.CurrentStars));
+            StarBrush = StarRatingColour.PillBrush(result.CurrentStars);
+            StarTextBrush = StarRatingColour.TextBrush(result.CurrentStars);
             Diagnostics = $"Debug payload: {DebugLogPath}";
             updateSkills(result.Skills);
         }
@@ -183,8 +184,11 @@ public class MainViewModel : INotifyPropertyChanged
     private string ppText = "—";
     public string PpText { get => ppText; set => set(ref ppText, value); }
 
-    private Brush starBrush = new SolidColorBrush(StarRatingColour.ForStars(0));
+    private Brush starBrush = StarRatingColour.PillBrush(0);
     public Brush StarBrush { get => starBrush; set => set(ref starBrush, value); }
+
+    private Brush starTextBrush = StarRatingColour.TextBrush(0);
+    public Brush StarTextBrush { get => starTextBrush; set => set(ref starTextBrush, value); }
 
     private string diagnostics = "";
     public string Diagnostics { get => diagnostics; set => set(ref diagnostics, value); }

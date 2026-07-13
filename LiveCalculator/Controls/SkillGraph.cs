@@ -47,33 +47,50 @@ public class SkillGraph : Canvas
         if (globalMax <= 0)
             return;
 
-        const double pad = 4;
+        double fillAlpha = Math.Min(1.5 / series.Count, 0.9);
+        double strokeAlpha = Math.Min(fillAlpha * 2.4, 0.95);
+
+        const double pad = 3;
         double plotHeight = height - pad * 2;
+        double baseline = pad + plotHeight;
 
         for (int i = 0; i < series.Count; i++)
         {
             var difficulties = series[i].Difficulties;
-            var points = new PointCollection();
-
             int count = difficulties.Count;
             int step = Math.Max(1, count / max_points);
 
+            var line = new PointCollection();
             for (int x = 0; x < count; x += step)
             {
                 double fx = count > 1 ? (double)x / (count - 1) : 0;
                 double fy = difficulties[x] / globalMax;
-                points.Add(new Point(fx * width, pad + (1 - fy) * plotHeight));
+                line.Add(new Point(fx * width, pad + (1 - fy) * plotHeight));
             }
 
-            var polyline = new Polyline
-            {
-                Points = points,
-                Stroke = SkillPalette.BrushForIndex(i),
-                StrokeThickness = 1.6,
-                StrokeLineJoin = PenLineJoin.Round
-            };
+            var colour = SkillPalette.ForIndex(i);
 
-            Children.Add(polyline);
+            var area = new PointCollection(line) { new Point(width, baseline), new Point(0, baseline) };
+            Children.Add(new Polygon
+            {
+                Points = area,
+                Fill = frozenBrush(colour, fillAlpha)
+            });
+
+            Children.Add(new Polyline
+            {
+                Points = line,
+                Stroke = frozenBrush(colour, strokeAlpha),
+                StrokeThickness = 1.4,
+                StrokeLineJoin = PenLineJoin.Round
+            });
         }
+    }
+
+    private static Brush frozenBrush(Color colour, double alpha)
+    {
+        var brush = new SolidColorBrush(Color.FromArgb((byte)Math.Clamp(alpha * 255, 0, 255), colour.R, colour.G, colour.B));
+        brush.Freeze();
+        return brush;
     }
 }

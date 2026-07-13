@@ -10,18 +10,18 @@
         Height="720" Width="470"
         MinHeight="620" MinWidth="420"
         WindowStartupLocation="CenterScreen"
-        Background="#14121A"
+        Background="#171A1C"
         FontFamily="Segoe UI">
 
     <Window.Resources>
         <Style x:Key="Label" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#8A8494" />
+            <Setter Property="Foreground" Value="#8F9CA3" />
             <Setter Property="FontSize" Value="11" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="TextAlignment" Value="Center" />
         </Style>
         <Style x:Key="Value" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#F2EEF7" />
+            <Setter Property="Foreground" Value="#DBE9F0" />
             <Setter Property="FontSize" Value="15" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="TextAlignment" Value="Center" />
@@ -39,21 +39,21 @@
         </Grid.RowDefinitions>
 
         <!-- Connection status -->
-        <Border Grid.Row="0" CornerRadius="14" Padding="12,6" HorizontalAlignment="Center" Background="#221E2C">
+        <Border Grid.Row="0" CornerRadius="10" Padding="12,6" HorizontalAlignment="Center" Background="#2E3538">
             <StackPanel Orientation="Horizontal">
                 <Ellipse Width="9" Height="9" VerticalAlignment="Center" Margin="0,0,8,0">
                     <Ellipse.Style>
                         <Style TargetType="Ellipse">
-                            <Setter Property="Fill" Value="#E45C6B" />
+                            <Setter Property="Fill" Value="#ED1121" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding IsConnected}" Value="True">
-                                    <Setter Property="Fill" Value="#63D471" />
+                                    <Setter Property="Fill" Value="#88B300" />
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
                     </Ellipse.Style>
                 </Ellipse>
-                <TextBlock Text="{Binding ConnectionStatus}" Foreground="#C9C3D6" FontSize="12" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding ConnectionStatus}" Foreground="#DBE9F0" FontSize="12" VerticalAlignment="Center" />
             </StackPanel>
         </Border>
 
@@ -61,33 +61,33 @@
         <StackPanel Grid.Row="1" Margin="0,18,0,0">
             <TextBlock Text="{Binding Title}" Foreground="#FFFFFF" FontSize="21" FontWeight="Bold"
                        TextAlignment="Center" TextTrimming="CharacterEllipsis" />
-            <TextBlock Text="{Binding Artist}" Foreground="#B7B0C4" FontSize="13"
+            <TextBlock Text="{Binding Artist}" Foreground="#8F9CA3" FontSize="13"
                        TextAlignment="Center" Margin="0,2,0,0" TextTrimming="CharacterEllipsis" />
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,6,0,0">
-                <TextBlock Text="{Binding Version}" Foreground="#FF6BA9" FontSize="12" FontWeight="SemiBold" Margin="0,0,8,0" />
-                <TextBlock Text="{Binding Mapper}" Foreground="#7E7890" FontSize="12" />
+                <TextBlock Text="{Binding Version}" Foreground="#FF66AA" FontSize="12" FontWeight="SemiBold" Margin="0,0,8,0" />
+                <TextBlock Text="{Binding Mapper}" Foreground="#5C6970" FontSize="12" />
             </StackPanel>
         </StackPanel>
 
         <!-- Live readout -->
         <StackPanel Grid.Row="2" Margin="0,18,0,0">
-            <!-- Star rating pill -->
-            <Border CornerRadius="18" Padding="18,7" HorizontalAlignment="Center" Background="{Binding StarBrush}">
+            <!-- Star rating pill (osu! style: spectrum background, SR-coloured icon + text) -->
+            <Border CornerRadius="100" Padding="16,6" HorizontalAlignment="Center" Background="{Binding StarBrush}">
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="★" Foreground="#1A1622" FontSize="18" VerticalAlignment="Center" Margin="0,0,7,0" />
-                    <TextBlock Text="{Binding CurrentStarsText}" Foreground="#1A1622" FontSize="20" FontWeight="Bold" VerticalAlignment="Center" />
+                    <TextBlock Text="★" Foreground="{Binding StarTextBrush}" FontSize="17" VerticalAlignment="Center" Margin="0,0,7,0" />
+                    <TextBlock Text="{Binding CurrentStarsText}" Foreground="{Binding StarTextBrush}" FontSize="19" FontWeight="Bold" VerticalAlignment="Center" />
                 </StackPanel>
             </Border>
 
             <!-- Big PP -->
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,16,0,0">
                 <TextBlock Text="{Binding PpText}" Foreground="#FFFFFF" FontSize="66" FontWeight="Bold" />
-                <TextBlock Text="pp" Foreground="#FF6BA9" FontSize="26" FontWeight="Bold" VerticalAlignment="Bottom" Margin="6,0,0,12" />
+                <TextBlock Text="pp" Foreground="#FF66AA" FontSize="26" FontWeight="Bold" VerticalAlignment="Bottom" Margin="6,0,0,12" />
             </StackPanel>
         </StackPanel>
 
         <!-- Stat row -->
-        <Border Grid.Row="3" CornerRadius="14" Background="#1C1926" Padding="14,12" Margin="0,14,0,0">
+        <Border Grid.Row="3" CornerRadius="10" Background="#22282A" Padding="14,12" Margin="0,14,0,0">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -117,7 +117,7 @@
         </Border>
 
         <!-- Skills breakdown -->
-        <Border Grid.Row="4" CornerRadius="14" Background="#1C1926" Padding="14,12" Margin="0,14,0,0">
+        <Border Grid.Row="4" CornerRadius="10" Background="#22282A" Padding="14,12" Margin="0,14,0,0">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -125,10 +125,10 @@
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
-                <TextBlock Grid.Row="0" Text="SKILLS" Foreground="#8A8494" FontSize="11" FontWeight="SemiBold" />
+                <TextBlock Grid.Row="0" Text="STRAIN" Foreground="#8F9CA3" FontSize="11" FontWeight="SemiBold" />
 
-                <!-- Auto-discovered skill legend -->
-                <ItemsControl Grid.Row="1" ItemsSource="{Binding SkillLegend}" Margin="0,8,0,6">
+                <!-- Auto-discovered skill legend (osu! style chips) -->
+                <ItemsControl Grid.Row="1" ItemsSource="{Binding SkillLegend}" Margin="0,8,0,8">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <WrapPanel Orientation="Horizontal" />
@@ -136,21 +136,23 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,14,4" VerticalAlignment="Center">
-                                <Rectangle Width="10" Height="10" RadiusX="2" RadiusY="2" Fill="{Binding Brush}" VerticalAlignment="Center" />
-                                <TextBlock Text="{Binding Name}" Foreground="#D5D0DE" FontSize="12" Margin="6,0,5,0" VerticalAlignment="Center" />
-                                <TextBlock Text="{Binding ValueText}" Foreground="#7E7890" FontSize="12" VerticalAlignment="Center" />
-                            </StackPanel>
+                            <Border Background="#2E3538" CornerRadius="10" Padding="9,4" Margin="0,0,7,6">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Ellipse Width="9" Height="9" Fill="{Binding Brush}" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding Name}" Foreground="{Binding Brush}" FontSize="12" FontWeight="SemiBold" Margin="6,0,5,0" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding ValueText}" Foreground="#8F9CA3" FontSize="12" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
 
                 <!-- Graph -->
-                <Border Grid.Row="2" CornerRadius="8" Background="#15121D" MinHeight="120">
+                <Border Grid.Row="2" CornerRadius="8" Background="#171A1C" MinHeight="130">
                     <Grid>
                         <ctrl:SkillGraph Series="{Binding Skills}" Margin="6" />
-                        <TextBlock Text="Skill breakdown appears while a beatmap is loaded"
-                                   Foreground="#5C5768" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center"
+                        <TextBlock Text="Strain breakdown appears while a beatmap is loaded"
+                                   Foreground="#5C6970" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center"
                                    TextAlignment="Center" TextWrapping="Wrap" Margin="12">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
@@ -169,7 +171,7 @@
         </Border>
 
         <!-- Diagnostics -->
-        <TextBlock Grid.Row="5" Text="{Binding Diagnostics}" Foreground="#5C5768" FontSize="10.5"
+        <TextBlock Grid.Row="5" Text="{Binding Diagnostics}" Foreground="#5C6970" FontSize="10.5"
                    TextWrapping="Wrap" Margin="2,10,2,0" />
     </Grid>
 </Window>

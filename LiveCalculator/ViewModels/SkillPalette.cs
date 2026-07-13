@@ -6,14 +6,12 @@ public static class SkillPalette
 {
     private static readonly Color[] colours =
     {
-        fromHex(0xFF7EB6),
-        fromHex(0x7AA2FF),
-        fromHex(0x63D4B0),
-        fromHex(0xFFD166),
-        fromHex(0xB692FF),
-        fromHex(0xFF9F68),
-        fromHex(0x8AE86A),
-        fromHex(0xFF6B6B),
+        fromHex(0x66CCFF),
+        fromHex(0x88B300),
+        fromHex(0xED1121),
+        fromHex(0xFFCC22),
+        fromHex(0xFF66AA),
+        fromHex(0x05F4FD),
     };
 
     public static Color ForIndex(int index) => colours[index % colours.Length];
