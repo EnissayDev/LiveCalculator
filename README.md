@@ -9,6 +9,16 @@ It reads the currently played beatmap and gameplay state from [tosu](https://git
 - Computes SR and live PP using the Enissay rework calculators.
 - Visualizes the results live.
 
+## Screenshots
+
+### Expanded mode
+
+![Expanded mode](LiveCalculator/Assets/Images/A1.png)
+
+### Compact mode
+
+![Compact mode](LiveCalculator/Assets/Images/A2.png)
+
 ## Running
 
 1. Start osu! and **tosu** (the memory reader) first.
