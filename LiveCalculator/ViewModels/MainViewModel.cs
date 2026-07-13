@@ -136,6 +136,8 @@ public class MainViewModel : INotifyPropertyChanged
             LiveSrText = "";
             OfficialSrText = "—";
             DeltaText = "";
+            ConclusionText = "";
+            HasDelta = false;
             Diagnostics = calculator.Status;
             updateSkills(Array.Empty<SkillSeries>());
         }
@@ -145,17 +147,41 @@ public class MainViewModel : INotifyPropertyChanged
     {
         if (officialStars <= 0)
         {
+            HasDelta = false;
             OfficialSrText = "—";
             DeltaText = "";
+            ConclusionText = "";
             return;
         }
 
+        HasDelta = true;
         OfficialSrText = officialStars.ToString("0.00", CultureInfo.InvariantCulture);
+        OldStarsText = officialStars.ToString("0.00", CultureInfo.InvariantCulture);
+        OldStarBrush = StarRatingColour.PillBrush(officialStars);
+        OldStarTextBrush = StarRatingColour.TextBrush(officialStars);
 
         double delta = reworkStars - officialStars;
         string sign = delta >= 0 ? "+" : "−";
         DeltaText = $"Δ {sign}{Math.Abs(delta).ToString("0.00", CultureInfo.InvariantCulture)}";
-        DeltaBrush = delta >= 0.005 ? positive_delta : delta <= -0.005 ? negative_delta : neutral_delta;
+
+        if (delta >= 0.005)
+        {
+            DeltaBrush = positive_delta;
+            ConclusionText = "Buffed";
+            ConclusionBrush = positive_delta;
+        }
+        else if (delta <= -0.005)
+        {
+            DeltaBrush = negative_delta;
+            ConclusionText = "Nerfed";
+            ConclusionBrush = negative_delta;
+        }
+        else
+        {
+            DeltaBrush = neutral_delta;
+            ConclusionText = "≈ same";
+            ConclusionBrush = neutral_delta;
+        }
     }
 
     private void updateSkills(IReadOnlyList<SkillSeries> skills)
@@ -231,6 +257,24 @@ public class MainViewModel : INotifyPropertyChanged
 
     private Brush deltaBrush = neutral_delta;
     public Brush DeltaBrush { get => deltaBrush; set => set(ref deltaBrush, value); }
+
+    private bool hasDelta;
+    public bool HasDelta { get => hasDelta; set => set(ref hasDelta, value); }
+
+    private string oldStarsText = "—";
+    public string OldStarsText { get => oldStarsText; set => set(ref oldStarsText, value); }
+
+    private Brush oldStarBrush = StarRatingColour.PillBrush(0);
+    public Brush OldStarBrush { get => oldStarBrush; set => set(ref oldStarBrush, value); }
+
+    private Brush oldStarTextBrush = StarRatingColour.TextBrush(0);
+    public Brush OldStarTextBrush { get => oldStarTextBrush; set => set(ref oldStarTextBrush, value); }
+
+    private string conclusionText = "";
+    public string ConclusionText { get => conclusionText; set => set(ref conclusionText, value); }
+
+    private Brush conclusionBrush = neutral_delta;
+    public Brush ConclusionBrush { get => conclusionBrush; set => set(ref conclusionBrush, value); }
 
     private string ppText = "—";
     public string PpText { get => ppText; set => set(ref ppText, value); }
