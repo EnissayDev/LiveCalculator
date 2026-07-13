@@ -51,7 +51,6 @@ public class LiveDifficultyCalculator
             var difficultyCalculator = ExtendedCalculatorFactory.Create(ruleset, working);
 
             var full = difficultyCalculator.Calculate(mods);
-            var timed = difficultyCalculator.CalculateTimed(mods);
 
             prepared = new PreparedMap
             {
@@ -60,7 +59,6 @@ public class LiveDifficultyCalculator
                 Mods = mods,
                 Playable = playable,
                 FullAttributes = full,
-                TimedAttributes = timed,
                 PerformanceCalculator = ruleset.CreatePerformanceCalculator(),
                 MaxCombo = playable.GetMaxCombo(),
                 Skills = extractSkills(difficultyCalculator)
@@ -83,27 +81,9 @@ public class LiveDifficultyCalculator
 
         try
         {
-            double maxStars = map.FullAttributes.StarRating;
+            double stars = map.FullAttributes.StarRating;
 
             int judged = snapshot.JudgedObjects;
-            DifficultyAttributes attributes = map.FullAttributes;
-            double currentStars = maxStars;
-
-            if (map.TimedAttributes.Count > 0)
-            {
-                if (judged <= 0)
-                {
-                    attributes = map.TimedAttributes[0].Attributes;
-                    currentStars = snapshot.IsPlaying ? attributes.StarRating : maxStars;
-                }
-                else
-                {
-                    int index = Math.Min(judged - 1, map.TimedAttributes.Count - 1);
-                    attributes = map.TimedAttributes[index].Attributes;
-                    currentStars = attributes.StarRating;
-                }
-            }
-
             double pp = 0;
 
             if (judged > 0 && map.PerformanceCalculator != null)
@@ -116,10 +96,10 @@ public class LiveDifficultyCalculator
                     Mods = map.Mods
                 };
 
-                pp = map.PerformanceCalculator.Calculate(score, attributes).Total;
+                pp = map.PerformanceCalculator.Calculate(score, map.FullAttributes).Total;
             }
 
-            return new LiveResult(currentStars, maxStars, pp, map.MaxCombo, map.Skills);
+            return new LiveResult(stars, stars, pp, map.MaxCombo, map.Skills);
         }
         catch (Exception ex)
         {
@@ -216,7 +196,6 @@ public class LiveDifficultyCalculator
         public required Mod[] Mods { get; init; }
         public required IBeatmap Playable { get; init; }
         public required DifficultyAttributes FullAttributes { get; init; }
-        public required IReadOnlyList<TimedDifficultyAttributes> TimedAttributes { get; init; }
         public required PerformanceCalculator? PerformanceCalculator { get; init; }
         public required int MaxCombo { get; init; }
         public required IReadOnlyList<SkillSeries> Skills { get; init; }

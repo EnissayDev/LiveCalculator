@@ -72,7 +72,7 @@
         <!-- Live readout -->
         <StackPanel Grid.Row="2" Margin="0,18,0,0">
             <!-- Star rating pill (osu! style: spectrum background, SR-coloured icon + text) -->
-            <Border CornerRadius="100" Padding="16,6" HorizontalAlignment="Center" Background="{Binding StarBrush}">
+            <Border CornerRadius="6" Padding="16,6" HorizontalAlignment="Center" Background="{Binding StarBrush}">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="★" Foreground="{Binding StarTextBrush}" FontSize="17" VerticalAlignment="Center" Margin="0,0,7,0" />
                     <TextBlock Text="{Binding CurrentStarsText}" Foreground="{Binding StarTextBrush}" FontSize="19" FontWeight="Bold" VerticalAlignment="Center" />
