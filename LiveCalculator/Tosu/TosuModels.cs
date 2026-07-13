@@ -38,6 +38,18 @@ public class TosuBeatmap
     [JsonPropertyName("title")] public string? Title { get; set; }
     [JsonPropertyName("mapper")] public string? Mapper { get; set; }
     [JsonPropertyName("version")] public string? Version { get; set; }
+    [JsonPropertyName("stats")] public TosuStats? Stats { get; set; }
+}
+
+public class TosuStats
+{
+    [JsonPropertyName("stars")] public TosuStars? Stars { get; set; }
+}
+
+public class TosuStars
+{
+    [JsonPropertyName("live")] public double Live { get; set; }
+    [JsonPropertyName("total")] public double Total { get; set; }
 }
 
 public class TosuMode

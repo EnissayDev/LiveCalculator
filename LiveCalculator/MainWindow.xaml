@@ -81,6 +81,19 @@
                 </Border>
                 <TextBlock Text="{Binding LiveSrText}" Foreground="#8F9CA3" FontSize="12" FontWeight="SemiBold"
                            VerticalAlignment="Center" Margin="9,0,0,0" />
+                <Border Background="#2E3538" CornerRadius="10" Padding="8,3" Margin="9,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding DeltaText}" Foreground="{Binding DeltaBrush}" FontSize="12" FontWeight="Bold" />
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Visibility" Value="Visible" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding DeltaText}" Value="">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                </Border>
             </StackPanel>
 
             <!-- Big PP -->
@@ -101,8 +114,8 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="MAX SR" Style="{StaticResource Label}" />
-                    <TextBlock Text="{Binding MaxStarsText}" Style="{StaticResource Value}" Margin="0,4,0,0" />
+                    <TextBlock Text="OFFICIAL SR" Style="{StaticResource Label}" />
+                    <TextBlock Text="{Binding OfficialSrText}" Style="{StaticResource Value}" Margin="0,4,0,0" />
                 </StackPanel>
                 <StackPanel Grid.Column="1">
                     <TextBlock Text="ACCURACY" Style="{StaticResource Label}" />

@@ -20,6 +20,8 @@ public class LiveSnapshot
     public int CurrentCombo { get; init; }
     public int MaxCombo { get; init; }
 
+    public double OfficialStars { get; init; }
+
     public int Count300 { get; init; }
     public int CountGeki { get; init; }
     public int Count100 { get; init; }
@@ -62,6 +64,7 @@ public class LiveSnapshot
             Accuracy = play?.Accuracy ?? 0,
             CurrentCombo = play?.Combo?.Current ?? 0,
             MaxCombo = play?.Combo?.Max ?? 0,
+            OfficialStars = beatmap?.Stats?.Stars?.Total ?? 0,
             Count300 = hits?.Count300 ?? 0,
             CountGeki = hits?.CountGeki ?? 0,
             Count100 = hits?.Count100 ?? 0,

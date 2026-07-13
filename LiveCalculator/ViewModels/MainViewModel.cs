@@ -24,6 +24,17 @@ public class MainViewModel : INotifyPropertyChanged
     private LiveSnapshot? pendingSnapshot;
     private CancellationTokenSource? workerCts;
 
+    private static readonly Brush positive_delta = frozen(0x88B300);
+    private static readonly Brush negative_delta = frozen(0xED1121);
+    private static readonly Brush neutral_delta = frozen(0x8F9CA3);
+
+    private static Brush frozen(int rgb)
+    {
+        var brush = new SolidColorBrush(Color.FromRgb((byte)((rgb >> 16) & 0xFF), (byte)((rgb >> 8) & 0xFF), (byte)(rgb & 0xFF)));
+        brush.Freeze();
+        return brush;
+    }
+
     public MainViewModel()
     {
         client.ConnectionChanged += onConnectionChanged;
@@ -107,12 +118,12 @@ public class MainViewModel : INotifyPropertyChanged
             StarBrush = StarRatingColour.PillBrush(result.Stars);
             StarTextBrush = StarRatingColour.TextBrush(result.Stars);
 
-            if (!result.CurrentReady)
-                LiveSrText = "live …";
-            else if (result.CurrentStars.HasValue)
+            if (result.CurrentReady && result.CurrentStars.HasValue)
                 LiveSrText = $"live {result.CurrentStars.Value.ToString("0.00", CultureInfo.InvariantCulture)}★";
             else
-                LiveSrText = $"live {result.Stars.ToString("0.00", CultureInfo.InvariantCulture)}★";
+                LiveSrText = "live …";
+
+            applyDelta(result.Stars, s.OfficialStars);
 
             Diagnostics = $"Debug payload: {DebugLogPath}";
             updateSkills(result.Skills);
@@ -123,9 +134,28 @@ public class MainViewModel : INotifyPropertyChanged
             MaxStarsText = "—";
             PpText = "—";
             LiveSrText = "";
+            OfficialSrText = "—";
+            DeltaText = "";
             Diagnostics = calculator.Status;
             updateSkills(Array.Empty<SkillSeries>());
         }
+    }
+
+    private void applyDelta(double reworkStars, double officialStars)
+    {
+        if (officialStars <= 0)
+        {
+            OfficialSrText = "—";
+            DeltaText = "";
+            return;
+        }
+
+        OfficialSrText = officialStars.ToString("0.00", CultureInfo.InvariantCulture);
+
+        double delta = reworkStars - officialStars;
+        string sign = delta >= 0 ? "+" : "−";
+        DeltaText = $"Δ {sign}{Math.Abs(delta).ToString("0.00", CultureInfo.InvariantCulture)}";
+        DeltaBrush = delta >= 0.005 ? positive_delta : delta <= -0.005 ? negative_delta : neutral_delta;
     }
 
     private void updateSkills(IReadOnlyList<SkillSeries> skills)
@@ -192,6 +222,15 @@ public class MainViewModel : INotifyPropertyChanged
 
     private string liveSrText = "";
     public string LiveSrText { get => liveSrText; set => set(ref liveSrText, value); }
+
+    private string officialSrText = "—";
+    public string OfficialSrText { get => officialSrText; set => set(ref officialSrText, value); }
+
+    private string deltaText = "";
+    public string DeltaText { get => deltaText; set => set(ref deltaText, value); }
+
+    private Brush deltaBrush = neutral_delta;
+    public Brush DeltaBrush { get => deltaBrush; set => set(ref deltaBrush, value); }
 
     private string ppText = "—";
     public string PpText { get => ppText; set => set(ref ppText, value); }

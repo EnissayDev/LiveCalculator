@@ -136,9 +136,10 @@ public class LiveDifficultyCalculator
             bool currentReady = timed != null && timed.Key == map.Key;
             double? currentStars = null;
 
-            if (currentReady && timed!.Timed.Count > 0 && judged > 0)
+            if (currentReady && timed!.Timed.Count > 0)
             {
-                int index = Math.Min(judged - 1, timed.Timed.Count - 1);
+                // At the very start (judged 0) show the start-of-map difficulty, not the full-map SR.
+                int index = Math.Clamp(judged - 1, 0, timed.Timed.Count - 1);
                 currentStars = timed.Timed[index].Attributes.StarRating;
             }
 
