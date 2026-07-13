@@ -3,15 +3,25 @@ using System.Text.Json.Serialization;
 
 namespace LiveCalculator.Tosu;
 
-// Minimal subset of the tosu websocket/v2 payload. Unknown fields are ignored.
-// See https://github.com/tosumemory/tosu — /websocket/v2 endpoint.
-
 public class TosuPayload
 {
     [JsonPropertyName("state")] public TosuState? State { get; set; }
     [JsonPropertyName("beatmap")] public TosuBeatmap? Beatmap { get; set; }
     [JsonPropertyName("play")] public TosuPlay? Play { get; set; }
     [JsonPropertyName("directPath")] public TosuDirectPath? DirectPath { get; set; }
+    [JsonPropertyName("folders")] public TosuFolders? Folders { get; set; }
+    [JsonPropertyName("files")] public TosuFiles? Files { get; set; }
+}
+
+public class TosuFolders
+{
+    [JsonPropertyName("songs")] public string? Songs { get; set; }
+    [JsonPropertyName("beatmap")] public string? Beatmap { get; set; }
+}
+
+public class TosuFiles
+{
+    [JsonPropertyName("beatmap")] public string? Beatmap { get; set; }
 }
 
 public class TosuState

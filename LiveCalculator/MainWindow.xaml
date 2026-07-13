@@ -4,10 +4,11 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:LiveCalculator"
+        xmlns:ctrl="clr-namespace:LiveCalculator.Controls"
         mc:Ignorable="d"
         Title="LiveCalculator — SR / PP"
-        Height="520" Width="440"
-        MinHeight="480" MinWidth="380"
+        Height="720" Width="470"
+        MinHeight="620" MinWidth="420"
         WindowStartupLocation="CenterScreen"
         Background="#14121A"
         FontFamily="Segoe UI">
@@ -29,6 +30,8 @@
 
     <Grid Margin="18">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -55,8 +58,8 @@
         </Border>
 
         <!-- Beatmap header -->
-        <StackPanel Grid.Row="1" Margin="0,22,0,0">
-            <TextBlock Text="{Binding Title}" Foreground="#FFFFFF" FontSize="22" FontWeight="Bold"
+        <StackPanel Grid.Row="1" Margin="0,18,0,0">
+            <TextBlock Text="{Binding Title}" Foreground="#FFFFFF" FontSize="21" FontWeight="Bold"
                        TextAlignment="Center" TextTrimming="CharacterEllipsis" />
             <TextBlock Text="{Binding Artist}" Foreground="#B7B0C4" FontSize="13"
                        TextAlignment="Center" Margin="0,2,0,0" TextTrimming="CharacterEllipsis" />
@@ -67,7 +70,7 @@
         </StackPanel>
 
         <!-- Live readout -->
-        <StackPanel Grid.Row="2" VerticalAlignment="Center">
+        <StackPanel Grid.Row="2" Margin="0,18,0,0">
             <!-- Star rating pill -->
             <Border CornerRadius="18" Padding="18,7" HorizontalAlignment="Center" Background="{Binding StarBrush}">
                 <StackPanel Orientation="Horizontal">
@@ -77,14 +80,14 @@
             </Border>
 
             <!-- Big PP -->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,26,0,0">
-                <TextBlock Text="{Binding PpText}" Foreground="#FFFFFF" FontSize="76" FontWeight="Bold" />
-                <TextBlock Text="pp" Foreground="#FF6BA9" FontSize="28" FontWeight="Bold" VerticalAlignment="Bottom" Margin="6,0,0,14" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,16,0,0">
+                <TextBlock Text="{Binding PpText}" Foreground="#FFFFFF" FontSize="66" FontWeight="Bold" />
+                <TextBlock Text="pp" Foreground="#FF6BA9" FontSize="26" FontWeight="Bold" VerticalAlignment="Bottom" Margin="6,0,0,12" />
             </StackPanel>
         </StackPanel>
 
         <!-- Stat row -->
-        <Border Grid.Row="3" CornerRadius="14" Background="#1C1926" Padding="14,12">
+        <Border Grid.Row="3" CornerRadius="14" Background="#1C1926" Padding="14,12" Margin="0,14,0,0">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -112,5 +115,61 @@
                 </StackPanel>
             </Grid>
         </Border>
+
+        <!-- Skills breakdown -->
+        <Border Grid.Row="4" CornerRadius="14" Background="#1C1926" Padding="14,12" Margin="0,14,0,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Text="SKILLS" Foreground="#8A8494" FontSize="11" FontWeight="SemiBold" />
+
+                <!-- Auto-discovered skill legend -->
+                <ItemsControl Grid.Row="1" ItemsSource="{Binding SkillLegend}" Margin="0,8,0,6">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,14,4" VerticalAlignment="Center">
+                                <Rectangle Width="10" Height="10" RadiusX="2" RadiusY="2" Fill="{Binding Brush}" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding Name}" Foreground="#D5D0DE" FontSize="12" Margin="6,0,5,0" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding ValueText}" Foreground="#7E7890" FontSize="12" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- Graph -->
+                <Border Grid.Row="2" CornerRadius="8" Background="#15121D" MinHeight="120">
+                    <Grid>
+                        <ctrl:SkillGraph Series="{Binding Skills}" Margin="6" />
+                        <TextBlock Text="Skill breakdown appears while a beatmap is loaded"
+                                   Foreground="#5C5768" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   TextAlignment="Center" TextWrapping="Wrap" Margin="12">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasSkills}" Value="True">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- Diagnostics -->
+        <TextBlock Grid.Row="5" Text="{Binding Diagnostics}" Foreground="#5C5768" FontSize="10.5"
+                   TextWrapping="Wrap" Margin="2,10,2,0" />
     </Grid>
 </Window>

@@ -1,5 +1,3 @@
-// Portions adapted from ppy/osu-tools (MIT Licence) — PerformanceCalculator/ProcessorWorkingBeatmap.cs.
-
 using System.IO;
 using osu.Framework.Audio.Track;
 using osu.Framework.Graphics.Textures;
@@ -10,10 +8,6 @@ using osu.Game.Skinning;
 
 namespace LiveCalculator.Osu;
 
-/// <summary>
-/// A <see cref="WorkingBeatmap"/> that reads from a .osu file on disk. Graphics/audio accessors are never
-/// used by difficulty/performance calculation, so they intentionally throw.
-/// </summary>
 public class ProcessorWorkingBeatmap : WorkingBeatmap
 {
     private readonly Beatmap beatmap;

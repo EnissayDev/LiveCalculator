@@ -1,6 +1,10 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
+using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,8 +30,11 @@ public class MainViewModel : INotifyPropertyChanged
         client.SnapshotReceived += onSnapshotReceived;
     }
 
+    public string DebugLogPath { get; } = Path.Combine(Path.GetTempPath(), "livecalculator-tosu.json");
+
     public void Start()
     {
+        client.DebugLogPath = DebugLogPath;
         workerCts = new CancellationTokenSource();
         _ = Task.Run(() => processLoop(workerCts.Token));
         client.Start();
@@ -51,7 +58,6 @@ public class MainViewModel : INotifyPropertyChanged
 
     private void onSnapshotReceived(LiveSnapshot snapshot)
     {
-        // Coalesce bursts: keep only the newest snapshot and wake the worker.
         Interlocked.Exchange(ref pendingSnapshot, snapshot);
         signal.Set();
     }
@@ -99,13 +105,28 @@ public class MainViewModel : INotifyPropertyChanged
             MaxStarsText = result.MaxStars.ToString("0.00", CultureInfo.InvariantCulture);
             PpText = result.Pp.ToString("0", CultureInfo.InvariantCulture);
             StarBrush = new SolidColorBrush(StarRatingColour.ForStars(result.CurrentStars));
+            Diagnostics = $"Debug payload: {DebugLogPath}";
+            updateSkills(result.Skills);
         }
         else
         {
             CurrentStarsText = "—";
             MaxStarsText = "—";
             PpText = "—";
+            Diagnostics = calculator.Status;
+            updateSkills(Array.Empty<SkillSeries>());
         }
+    }
+
+    private void updateSkills(IReadOnlyList<SkillSeries> skills)
+    {
+        Skills = skills;
+
+        SkillLegend.Clear();
+        for (int i = 0; i < skills.Count; i++)
+            SkillLegend.Add(new SkillLegendItem(skills[i].Name, SkillPalette.BrushForIndex(i), skills[i].Value));
+
+        HasSkills = skills.Count > 0;
     }
 
     private static void dispatch(Action action)
@@ -119,8 +140,6 @@ public class MainViewModel : INotifyPropertyChanged
         else
             app.Dispatcher.BeginInvoke(action);
     }
-
-    #region Bound properties
 
     private bool isConnected;
     public bool IsConnected { get => isConnected; set => set(ref isConnected, value); }
@@ -167,7 +186,16 @@ public class MainViewModel : INotifyPropertyChanged
     private Brush starBrush = new SolidColorBrush(StarRatingColour.ForStars(0));
     public Brush StarBrush { get => starBrush; set => set(ref starBrush, value); }
 
-    #endregion
+    private string diagnostics = "";
+    public string Diagnostics { get => diagnostics; set => set(ref diagnostics, value); }
+
+    private IReadOnlyList<SkillSeries> skills = System.Array.Empty<SkillSeries>();
+    public IReadOnlyList<SkillSeries> Skills { get => skills; set => set(ref skills, value); }
+
+    private bool hasSkills;
+    public bool HasSkills { get => hasSkills; set => set(ref hasSkills, value); }
+
+    public ObservableCollection<SkillLegendItem> SkillLegend { get; } = new();
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -179,4 +207,18 @@ public class MainViewModel : INotifyPropertyChanged
         field = value;
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
+}
+
+public class SkillLegendItem
+{
+    public SkillLegendItem(string name, Brush brush, double value)
+    {
+        Name = name;
+        Brush = brush;
+        ValueText = value.ToString("0.00", CultureInfo.InvariantCulture);
+    }
+
+    public string Name { get; }
+    public Brush Brush { get; }
+    public string ValueText { get; }
 }

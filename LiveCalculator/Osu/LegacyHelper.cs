@@ -1,5 +1,3 @@
-// Portions adapted from ppy/osu-tools (MIT Licence) — PerformanceCalculator/LegacyHelper.cs.
-
 using System;
 using osu.Game.Rulesets;
 using osu.Game.Rulesets.Catch;
@@ -11,9 +9,6 @@ namespace LiveCalculator.Osu;
 
 public static class LegacyHelper
 {
-    /// <summary>
-    /// Maps a legacy ruleset id (0 = osu, 1 = taiko, 2 = catch, 3 = mania) to a ruleset instance.
-    /// </summary>
     public static Ruleset GetRulesetFromLegacyId(int id) => id switch
     {
         0 => new OsuRuleset(),

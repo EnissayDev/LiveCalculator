@@ -12,103 +12,142 @@ using osu.Game.Scoring;
 
 namespace LiveCalculator.Osu;
 
-public record LiveResult(double CurrentStars, double MaxStars, double Pp, int MaxCombo);
+public record SkillSeries(string Name, IReadOnlyList<double> Difficulties, double Value);
 
-/// <summary>
-/// Wires tosu updates into the local osu!lazer (osu2) difficulty and performance calculators.
-/// Heavy work (loading a beatmap, computing timed difficulty attributes) is done once per map/mod
-/// change via <see cref="Prepare"/>; per-frame live PP is cheap in <see cref="CalculateLive"/>.
-/// </summary>
+public record LiveResult(double CurrentStars, double MaxStars, double Pp, int MaxCombo, IReadOnlyList<SkillSeries> Skills);
+
 public class LiveDifficultyCalculator
 {
     private PreparedMap? prepared;
 
-    /// <summary>The map+mods key currently prepared, or null if nothing is loaded.</summary>
     public string? PreparedKey => prepared?.Key;
 
-    /// <summary>
-    /// Loads the beatmap referenced by <paramref name="snapshot"/> and precomputes difficulty attributes.
-    /// Expensive — call only when <see cref="LiveSnapshot.MapKey"/> changes.
-    /// </summary>
+    public string Status { get; private set; } = "Waiting for a beatmap…";
+
     public void Prepare(LiveSnapshot snapshot)
     {
-        if (string.IsNullOrEmpty(snapshot.BeatmapFile) || !System.IO.File.Exists(snapshot.BeatmapFile))
+        prepared = null;
+
+        if (string.IsNullOrEmpty(snapshot.BeatmapFile))
         {
-            prepared = null;
+            Status = "tosu did not report a beatmap file path (directPath.beatmapFile).";
             return;
         }
 
-        var ruleset = LegacyHelper.GetRulesetFromLegacyId(snapshot.RulesetId);
-        var working = new ProcessorWorkingBeatmap(snapshot.BeatmapFile);
-        var mods = parseMods(ruleset, snapshot.Mods);
-
-        var playable = working.GetPlayableBeatmap(ruleset.RulesetInfo, mods);
-        var difficultyCalculator = ruleset.CreateDifficultyCalculator(working);
-
-        var full = difficultyCalculator.Calculate(mods);
-        var timed = difficultyCalculator.CalculateTimed(mods);
-
-        prepared = new PreparedMap
+        if (!System.IO.File.Exists(snapshot.BeatmapFile))
         {
-            Key = snapshot.MapKey,
-            Ruleset = ruleset,
-            Mods = mods,
-            Playable = playable,
-            FullAttributes = full,
-            TimedAttributes = timed,
-            PerformanceCalculator = ruleset.CreatePerformanceCalculator(),
-            MaxCombo = playable.GetMaxCombo()
-        };
+            Status = $"Beatmap file not found on disk: {snapshot.BeatmapFile}";
+            return;
+        }
+
+        try
+        {
+            var ruleset = LegacyHelper.GetRulesetFromLegacyId(snapshot.RulesetId);
+            var working = new ProcessorWorkingBeatmap(snapshot.BeatmapFile);
+            var mods = parseMods(ruleset, snapshot.Mods);
+
+            var playable = working.GetPlayableBeatmap(ruleset.RulesetInfo, mods);
+
+            var difficultyCalculator = ExtendedCalculatorFactory.Create(ruleset, working);
+
+            var full = difficultyCalculator.Calculate(mods);
+            var timed = difficultyCalculator.CalculateTimed(mods);
+
+            prepared = new PreparedMap
+            {
+                Key = snapshot.MapKey,
+                Ruleset = ruleset,
+                Mods = mods,
+                Playable = playable,
+                FullAttributes = full,
+                TimedAttributes = timed,
+                PerformanceCalculator = ruleset.CreatePerformanceCalculator(),
+                MaxCombo = playable.GetMaxCombo(),
+                Skills = extractSkills(difficultyCalculator)
+            };
+
+            Status = "";
+        }
+        catch (Exception ex)
+        {
+            prepared = null;
+            Status = $"Calc failed for {System.IO.Path.GetFileName(snapshot.BeatmapFile)}: {ex.GetType().Name}: {ex.Message}";
+        }
     }
 
-    /// <summary>
-    /// Computes current star rating and live PP for the given snapshot against the prepared map.
-    /// Returns null if no map is prepared or the snapshot no longer matches it.
-    /// </summary>
     public LiveResult? CalculateLive(LiveSnapshot snapshot)
     {
         var map = prepared;
         if (map == null || map.Key != snapshot.MapKey)
             return null;
 
-        double maxStars = map.FullAttributes.StarRating;
-
-        // Pick cumulative difficulty attributes at the player's current progress.
-        int judged = snapshot.JudgedObjects;
-        DifficultyAttributes attributes = map.FullAttributes;
-        double currentStars = maxStars;
-
-        if (map.TimedAttributes.Count > 0)
+        try
         {
-            if (judged <= 0)
+            double maxStars = map.FullAttributes.StarRating;
+
+            int judged = snapshot.JudgedObjects;
+            DifficultyAttributes attributes = map.FullAttributes;
+            double currentStars = maxStars;
+
+            if (map.TimedAttributes.Count > 0)
             {
-                attributes = map.TimedAttributes[0].Attributes;
-                currentStars = snapshot.IsPlaying ? attributes.StarRating : maxStars;
+                if (judged <= 0)
+                {
+                    attributes = map.TimedAttributes[0].Attributes;
+                    currentStars = snapshot.IsPlaying ? attributes.StarRating : maxStars;
+                }
+                else
+                {
+                    int index = Math.Min(judged - 1, map.TimedAttributes.Count - 1);
+                    attributes = map.TimedAttributes[index].Attributes;
+                    currentStars = attributes.StarRating;
+                }
             }
-            else
+
+            double pp = 0;
+
+            if (judged > 0 && map.PerformanceCalculator != null)
             {
-                int index = Math.Min(judged - 1, map.TimedAttributes.Count - 1);
-                attributes = map.TimedAttributes[index].Attributes;
-                currentStars = attributes.StarRating;
+                var score = new ScoreInfo(map.Playable.BeatmapInfo, map.Ruleset.RulesetInfo)
+                {
+                    Accuracy = snapshot.Accuracy > 0 ? snapshot.Accuracy / 100.0 : 1.0,
+                    MaxCombo = snapshot.MaxCombo,
+                    Statistics = buildStatistics(snapshot),
+                    Mods = map.Mods
+                };
+
+                pp = map.PerformanceCalculator.Calculate(score, attributes).Total;
             }
+
+            return new LiveResult(currentStars, maxStars, pp, map.MaxCombo, map.Skills);
+        }
+        catch (Exception ex)
+        {
+            Status = $"Live calc error: {ex.GetType().Name}: {ex.Message}";
+            return null;
+        }
+    }
+
+    private static IReadOnlyList<SkillSeries> extractSkills(DifficultyCalculator calculator)
+    {
+        if (calculator is not IExtendedDifficultyCalculator extended)
+            return Array.Empty<SkillSeries>();
+
+        var series = new List<SkillSeries>();
+        var seenNames = new HashSet<string>();
+
+        foreach (var skill in extended.GetSkills())
+        {
+            string name = skill.GetType().Name;
+
+            if (!seenNames.Add(name))
+                continue;
+
+            var difficulties = skill.GetObjectDifficulties().ToArray();
+            series.Add(new SkillSeries(name, difficulties, skill.DifficultyValue()));
         }
 
-        double pp = 0;
-
-        if (judged > 0 && map.PerformanceCalculator != null)
-        {
-            var score = new ScoreInfo(map.Playable.BeatmapInfo, map.Ruleset.RulesetInfo)
-            {
-                Accuracy = snapshot.Accuracy > 0 ? snapshot.Accuracy / 100.0 : 1.0,
-                MaxCombo = snapshot.MaxCombo,
-                Statistics = buildStatistics(snapshot),
-                Mods = map.Mods
-            };
-
-            pp = map.PerformanceCalculator.Calculate(score, attributes).Total;
-        }
-
-        return new LiveResult(currentStars, maxStars, pp, map.MaxCombo);
+        return series;
     }
 
     private static Dictionary<HitResult, int> buildStatistics(LiveSnapshot s) => s.RulesetId switch
@@ -155,7 +194,6 @@ public class LiveDifficultyCalculator
 
         foreach (string acronym in acronyms)
         {
-            // tosu reports these but they don't affect difficulty/pp; skipping avoids ToMod issues.
             if (acronym is "CL" or "NF" or "SD" or "PF" or "AT" or "CM")
                 continue;
 
@@ -165,7 +203,6 @@ public class LiveDifficultyCalculator
             }
             catch
             {
-                // Unknown / unsupported acronym for this ruleset — ignore it.
             }
         }
 
@@ -182,5 +219,6 @@ public class LiveDifficultyCalculator
         public required IReadOnlyList<TimedDifficultyAttributes> TimedAttributes { get; init; }
         public required PerformanceCalculator? PerformanceCalculator { get; init; }
         public required int MaxCombo { get; init; }
+        public required IReadOnlyList<SkillSeries> Skills { get; init; }
     }
 }

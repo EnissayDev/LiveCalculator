@@ -3,9 +3,6 @@ using System.Windows.Media;
 
 namespace LiveCalculator.ViewModels;
 
-/// <summary>
-/// Approximates osu!'s star-rating difficulty colour spectrum.
-/// </summary>
 public static class StarRatingColour
 {
     private static readonly (double stars, Color colour)[] spectrum =

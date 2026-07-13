@@ -7,10 +7,6 @@ using System.Threading.Tasks;
 
 namespace LiveCalculator.Tosu;
 
-/// <summary>
-/// Connects to a running tosu instance and streams normalised <see cref="LiveSnapshot"/> updates.
-/// Reconnects automatically while running.
-/// </summary>
 public class TosuClient : IDisposable
 {
     public const string DefaultUri = "ws://127.0.0.1:24050/websocket/v2";
@@ -23,11 +19,12 @@ public class TosuClient : IDisposable
 
     private readonly Uri uri;
     private CancellationTokenSource? cts;
+    private DateTime lastRawWrite = DateTime.MinValue;
 
-    /// <summary>Fired on every successfully-parsed update (on a background thread).</summary>
+    public string? DebugLogPath { get; set; }
+
     public event Action<LiveSnapshot>? SnapshotReceived;
 
-    /// <summary>Fired when the connection state changes. Argument is true when connected.</summary>
     public event Action<bool, string>? ConnectionChanged;
 
     public TosuClient(string? uri = null)
@@ -69,6 +66,8 @@ public class TosuClient : IDisposable
                     if (message == null)
                         break;
 
+                    writeDebug(message);
+
                     try
                     {
                         var payload = JsonSerializer.Deserialize<TosuPayload>(message, json_options);
@@ -77,7 +76,6 @@ public class TosuClient : IDisposable
                     }
                     catch (JsonException)
                     {
-                        // Ignore malformed frames — tosu occasionally emits partial state.
                     }
                 }
             }
@@ -101,6 +99,25 @@ public class TosuClient : IDisposable
             {
                 break;
             }
+        }
+    }
+
+    private void writeDebug(string message)
+    {
+        if (string.IsNullOrEmpty(DebugLogPath))
+            return;
+
+        if ((DateTime.UtcNow - lastRawWrite).TotalSeconds < 1)
+            return;
+
+        lastRawWrite = DateTime.UtcNow;
+
+        try
+        {
+            System.IO.File.WriteAllText(DebugLogPath, message);
+        }
+        catch
+        {
         }
     }
 
