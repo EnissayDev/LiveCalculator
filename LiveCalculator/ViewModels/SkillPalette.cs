@@ -4,7 +4,7 @@ namespace LiveCalculator.ViewModels;
 
 public static class SkillPalette
 {
-    private static readonly Color[] colours =
+    private static readonly Color[] Colours =
     {
         FromHex(0x66CCFF),
         FromHex(0x88B300),
@@ -14,7 +14,7 @@ public static class SkillPalette
         FromHex(0x05F4FD),
     };
 
-    public static Color ForIndex(int index) => colours[index % colours.Length];
+    public static Color ForIndex(int index) => Colours[index % Colours.Length];
 
     public static Brush BrushForIndex(int index)
     {

@@ -10,14 +10,37 @@
         <NoWarn>$(NoWarn);CS8600;CS8601;CS8602;CS8603;CS8604;CS8618;CS8625;CA1416</NoWarn>
     </PropertyGroup>
 
-    <!-- Live SR/PP is computed by referencing the local osu!lazer source (osu2, branch enissay-mania-sr-rework),
-         exactly like osutoolsenissayrework/PerformanceCalculator does. Paths are relative siblings under D:\RiderProjects. -->
+    <!-- ==========================================================================================
+         Location of the osu!lazer source tree (the enissay rework, branch enissay-mania-sr-rework).
+         Live SR/PP is computed against this source, exactly like osutoolsenissayrework/PerformanceCalculator.
+
+         There is NO hardcoded path any more. To build, point OsuSourceDir at your checkout via ONE of:
+           1. Copy osu-source.props.example -> osu-source.props and edit the path (git-ignored, per-user).
+           2. Set the OSU_SOURCE_DIR environment variable to your checkout.
+         If neither is set it falls back to a sibling 'osu2' folder next to this repo (original dev setup).
+         ========================================================================================== -->
+    <Import Project="osu-source.props" Condition="Exists('osu-source.props')" />
+    <PropertyGroup>
+        <OsuSourceDir Condition="'$(OsuSourceDir)' == ''">$(OSU_SOURCE_DIR)</OsuSourceDir>
+        <OsuSourceDir Condition="'$(OsuSourceDir)' == ''">$(MSBuildThisFileDirectory)..\..\osu2</OsuSourceDir>
+    </PropertyGroup>
+
+    <Target Name="CheckOsuSource" BeforeTargets="ResolveProjectReferences;CollectPackageReferences">
+        <Error Condition="!Exists('$(OsuSourceDir)\osu.Game\osu.Game.csproj')"
+               Text="Could not find osu!lazer source at '$(OsuSourceDir)'. Point it at your osu! rework checkout: copy osu-source.props.example to osu-source.props and edit OsuSourceDir, or set the OSU_SOURCE_DIR environment variable." />
+    </Target>
+
     <ItemGroup>
-        <ProjectReference Include="..\..\osu2\osu.Game.Rulesets.Catch\osu.Game.Rulesets.Catch.csproj" />
-        <ProjectReference Include="..\..\osu2\osu.Game.Rulesets.Mania\osu.Game.Rulesets.Mania.csproj" />
-        <ProjectReference Include="..\..\osu2\osu.Game.Rulesets.Osu\osu.Game.Rulesets.Osu.csproj" />
-        <ProjectReference Include="..\..\osu2\osu.Game.Rulesets.Taiko\osu.Game.Rulesets.Taiko.csproj" />
-        <ProjectReference Include="..\..\osu2\osu.Game\osu.Game.csproj" />
+        <ProjectReference Include="$(OsuSourceDir)\osu.Game.Rulesets.Catch\osu.Game.Rulesets.Catch.csproj" />
+        <ProjectReference Include="$(OsuSourceDir)\osu.Game.Rulesets.Mania\osu.Game.Rulesets.Mania.csproj" />
+        <ProjectReference Include="$(OsuSourceDir)\osu.Game.Rulesets.Osu\osu.Game.Rulesets.Osu.csproj" />
+        <ProjectReference Include="$(OsuSourceDir)\osu.Game.Rulesets.Taiko\osu.Game.Rulesets.Taiko.csproj" />
+        <ProjectReference Include="$(OsuSourceDir)\osu.Game\osu.Game.csproj" />
+    </ItemGroup>
+
+    <!-- Torus is osu!'s UI font (same as PerformanceCalculatorGUI). Embedded so it ships with the app. -->
+    <ItemGroup>
+        <Resource Include="Assets\Fonts\*.otf" />
     </ItemGroup>
 
 </Project>

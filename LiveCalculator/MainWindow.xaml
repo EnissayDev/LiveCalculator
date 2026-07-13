@@ -6,12 +6,12 @@
         xmlns:local="clr-namespace:LiveCalculator"
         xmlns:ctrl="clr-namespace:LiveCalculator.Controls"
         mc:Ignorable="d"
-        Title="LiveCalculator — SR / PP"
+        Title="Enissay Rework | Calc"
         Height="720" Width="470"
         MinHeight="620" MinWidth="420"
         WindowStartupLocation="CenterScreen"
         Background="#171A1C"
-        FontFamily="Segoe UI">
+        FontFamily="pack://application:,,,/Assets/Fonts/#Torus">
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
@@ -27,6 +27,29 @@
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="TextAlignment" Value="Center" />
         </Style>
+
+        <!-- Small pill button used for the compact-mode toggle -->
+        <Style x:Key="PillButton" TargetType="Button">
+            <Setter Property="Foreground" Value="#DBE9F0" />
+            <Setter Property="Background" Value="#2E3538" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="9" Padding="10,5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#3A4245" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Grid Margin="18">
@@ -39,27 +62,51 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!-- Connection status -->
-        <Border Grid.Row="0" CornerRadius="10" Padding="12,6" HorizontalAlignment="Center" Background="#2E3538">
-            <StackPanel Orientation="Horizontal">
-                <Ellipse Width="9" Height="9" VerticalAlignment="Center" Margin="0,0,8,0">
-                    <Ellipse.Style>
-                        <Style TargetType="Ellipse">
-                            <Setter Property="Fill" Value="#ED1121" />
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsConnected}" Value="True">
-                                    <Setter Property="Fill" Value="#88B300" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Ellipse.Style>
-                </Ellipse>
-                <TextBlock Text="{Binding ConnectionStatus}" Foreground="#DBE9F0" FontSize="12" VerticalAlignment="Center" />
-            </StackPanel>
-        </Border>
+        <!-- Top bar: connection status (full mode) + compact toggle -->
+        <Grid Grid.Row="0">
+            <!-- Connection status -->
+            <Border CornerRadius="10" Padding="12,6" HorizontalAlignment="Center" Background="#2E3538"
+                    Visibility="{Binding FullMode, Converter={StaticResource BoolToVisibility}}">
+                <StackPanel Orientation="Horizontal">
+                    <Ellipse Width="9" Height="9" VerticalAlignment="Center" Margin="0,0,8,0">
+                        <Ellipse.Style>
+                            <Style TargetType="Ellipse">
+                                <Setter Property="Fill" Value="#ED1121" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                        <Setter Property="Fill" Value="#88B300" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Ellipse.Style>
+                    </Ellipse>
+                    <TextBlock Text="{Binding ConnectionStatus}" Foreground="#DBE9F0" FontSize="12" VerticalAlignment="Center" />
+                </StackPanel>
+            </Border>
 
-        <!-- Beatmap header -->
-        <StackPanel Grid.Row="1" Margin="0,18,0,0">
+            <!-- Compact-mode toggle (always visible) -->
+            <Button x:Name="CompactButton" Style="{StaticResource PillButton}"
+                    HorizontalAlignment="Right" VerticalAlignment="Center" Click="CompactToggle_Click">
+                <Button.Content>
+                    <TextBlock>
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Text" Value="▁ Compact" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding CompactMode}" Value="True">
+                                        <Setter Property="Text" Value="▢ Expand" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Button.Content>
+            </Button>
+        </Grid>
+
+        <!-- Beatmap header (full mode only) -->
+        <StackPanel Grid.Row="1" Margin="0,18,0,0"
+                    Visibility="{Binding FullMode, Converter={StaticResource BoolToVisibility}}">
             <TextBlock Text="{Binding Title}" Foreground="#FFFFFF" FontSize="21" FontWeight="Bold"
                        TextAlignment="Center" TextTrimming="CharacterEllipsis" />
             <TextBlock Text="{Binding Artist}" Foreground="#8F9CA3" FontSize="13"
@@ -72,7 +119,7 @@
 
         <!-- Live readout -->
         <StackPanel Grid.Row="2" Margin="0,18,0,0">
-            <!-- Pre-rework comparison: mini old-SR pill + delta + verdict -->
+            <!-- Pre-rework comparison: mini old-SR pill + delta + verdict (official SR + delta) -->
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,10"
                         Visibility="{Binding HasDelta, Converter={StaticResource BoolToVisibility}}">
                 <Border CornerRadius="4" Padding="9,3" VerticalAlignment="Center" Background="{Binding OldStarBrush}">
@@ -86,7 +133,7 @@
                 <TextBlock Text="{Binding ConclusionText}" Foreground="{Binding ConclusionBrush}" FontSize="12" FontWeight="Bold" VerticalAlignment="Center" Margin="8,0,0,0" />
             </StackPanel>
 
-            <!-- Star rating pill (osu! style: spectrum background, SR-coloured icon + text) -->
+            <!-- Star rating pill (new rework SR) + live gameplay SR -->
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                 <Border CornerRadius="6" Padding="16,6" VerticalAlignment="Center" Background="{Binding StarBrush}">
                     <StackPanel Orientation="Horizontal">
@@ -98,15 +145,17 @@
                            VerticalAlignment="Center" Margin="9,0,0,0" />
             </StackPanel>
 
-            <!-- Big PP -->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,16,0,0">
+            <!-- Big PP (full mode only) -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,16,0,0"
+                        Visibility="{Binding FullMode, Converter={StaticResource BoolToVisibility}}">
                 <TextBlock Text="{Binding PpText}" Foreground="#FFFFFF" FontSize="66" FontWeight="Bold" />
                 <TextBlock Text="pp" Foreground="#FF66AA" FontSize="26" FontWeight="Bold" VerticalAlignment="Bottom" Margin="6,0,0,12" />
             </StackPanel>
         </StackPanel>
 
-        <!-- Stat row -->
-        <Border Grid.Row="3" CornerRadius="10" Background="#22282A" Padding="14,12" Margin="0,14,0,0">
+        <!-- Stat row (full mode only) -->
+        <Border Grid.Row="3" CornerRadius="10" Background="#22282A" Padding="14,12" Margin="0,14,0,0"
+                Visibility="{Binding FullMode, Converter={StaticResource BoolToVisibility}}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -135,8 +184,9 @@
             </Grid>
         </Border>
 
-        <!-- Skills breakdown -->
-        <Border Grid.Row="4" CornerRadius="10" Background="#22282A" Padding="14,12" Margin="0,14,0,0">
+        <!-- Skills breakdown (full mode only) -->
+        <Border Grid.Row="4" CornerRadius="10" Background="#22282A" Padding="14,12" Margin="0,14,0,0"
+                Visibility="{Binding FullMode, Converter={StaticResource BoolToVisibility}}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -189,8 +239,9 @@
             </Grid>
         </Border>
 
-        <!-- Diagnostics -->
+        <!-- Diagnostics (full mode only) -->
         <TextBlock Grid.Row="5" Text="{Binding Diagnostics}" Foreground="#5C6970" FontSize="10.5"
-                   TextWrapping="Wrap" Margin="2,10,2,0" />
+                   TextWrapping="Wrap" Margin="2,10,2,0"
+                   Visibility="{Binding FullMode, Converter={StaticResource BoolToVisibility}}" />
     </Grid>
 </Window>

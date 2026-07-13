@@ -11,7 +11,7 @@ public class TosuClient : IDisposable
 {
     public const string DefaultUri = "ws://127.0.0.1:24050/websocket/v2";
 
-    private static readonly JsonSerializerOptions json_options = new()
+    private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true,
         NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString
@@ -70,7 +70,7 @@ public class TosuClient : IDisposable
 
                     try
                     {
-                        var payload = JsonSerializer.Deserialize<TosuPayload>(message, json_options);
+                        var payload = JsonSerializer.Deserialize<TosuPayload>(message, JsonOptions);
                         if (payload != null)
                             SnapshotReceived?.Invoke(LiveSnapshot.FromPayload(payload));
                     }

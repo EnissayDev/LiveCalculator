@@ -12,7 +12,7 @@ namespace LiveCalculator.Controls;
 
 public class SkillGraph : Canvas
 {
-    private const int max_points = 600;
+    private const int MaxPoints = 600;
 
     public static readonly DependencyProperty SeriesProperty = DependencyProperty.Register(
         nameof(Series), typeof(IReadOnlyList<SkillSeries>), typeof(SkillGraph),
@@ -58,7 +58,7 @@ public class SkillGraph : Canvas
         {
             var difficulties = series[i].Difficulties;
             int count = difficulties.Count;
-            int step = Math.Max(1, count / max_points);
+            int step = Math.Max(1, count / MaxPoints);
 
             var line = new PointCollection();
             for (int x = 0; x < count; x += step)

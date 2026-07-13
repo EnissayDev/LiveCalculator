@@ -121,7 +121,7 @@ public class LiveDifficultyCalculator
         }, cts.Token);
     }
 
-    public LiveResult? CalculateLive(LiveSnapshot snapshot)
+    public LiveResult? CalculateLive(LiveSnapshot snapshot, bool includePp = true)
     {
         var map = prepared;
         if (map == null || map.Key != snapshot.MapKey)
@@ -145,7 +145,7 @@ public class LiveDifficultyCalculator
 
             double pp = 0;
 
-            if (judged > 0 && map.PerformanceCalculator != null)
+            if (includePp && judged > 0 && map.PerformanceCalculator != null)
             {
                 var score = new ScoreInfo(map.Playable.BeatmapInfo, map.Ruleset.RulesetInfo)
                 {

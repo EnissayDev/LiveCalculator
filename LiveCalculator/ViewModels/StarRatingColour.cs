@@ -5,10 +5,10 @@ namespace LiveCalculator.ViewModels;
 
 public static class StarRatingColour
 {
-    private const double defined_colour_cutoff = 6.5;
-    private const double text_gradient_cutoff = 9.0;
+    private const double DefinedColourCutoff = 6.5;
+    private const double TextGradientCutoff = 9.0;
 
-    private static readonly (double pos, Color colour)[] star_spectrum =
+    private static readonly (double pos, Color colour)[] StarSpectrum =
     {
         (0.1, FromHex(0xAAAAAA)),
         (0.1, FromHex(0x4290FB)),
@@ -25,7 +25,7 @@ public static class StarRatingColour
         (10.0, FromHex(0x000000)),
     };
 
-    private static readonly (double pos, Color colour)[] text_spectrum =
+    private static readonly (double pos, Color colour)[] TextSpectrum =
     {
         (9.0, FromHex(0xF6F05C)),
         (9.9, FromHex(0xFF8068)),
@@ -34,13 +34,13 @@ public static class StarRatingColour
         (12.4, FromHex(0x6563DE)),
     };
 
-    private static readonly Color orange1 = FromHex(0xFFD966);
+    private static readonly Color Orange1 = FromHex(0xFFD966);
 
-    public static Color ForStars(double stars) => Sample(star_spectrum, stars);
+    public static Color ForStars(double stars) => Sample(StarSpectrum, stars);
 
     public static Brush PillBrush(double stars)
     {
-        var brush = new SolidColorBrush(WithAlpha(Darken(Sample(star_spectrum, stars), 0.1), 0.75));
+        var brush = new SolidColorBrush(WithAlpha(Darken(Sample(StarSpectrum, stars), 0.1), 0.75));
         brush.Freeze();
         return brush;
     }
@@ -54,13 +54,13 @@ public static class StarRatingColour
 
     public static Color ForStarsText(double stars)
     {
-        if (stars < defined_colour_cutoff)
+        if (stars < DefinedColourCutoff)
             return WithAlpha(Colors.Black, 0.75);
 
-        if (stars < text_gradient_cutoff)
-            return orange1;
+        if (stars < TextGradientCutoff)
+            return Orange1;
 
-        return Sample(text_spectrum, stars);
+        return Sample(TextSpectrum, stars);
     }
 
     private static Color Sample((double pos, Color colour)[] stops, double value)

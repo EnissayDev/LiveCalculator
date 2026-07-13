@@ -24,9 +24,9 @@ public class MainViewModel : INotifyPropertyChanged
     private LiveSnapshot? pendingSnapshot;
     private CancellationTokenSource? workerCts;
 
-    private static readonly Brush positive_delta = Frozen(0x88B300);
-    private static readonly Brush negative_delta = Frozen(0xED1121);
-    private static readonly Brush neutral_delta = Frozen(0x8F9CA3);
+    private static readonly Brush PositiveDelta = Frozen(0x88B300);
+    private static readonly Brush NegativeDelta = Frozen(0xED1121);
+    private static readonly Brush NeutralDelta = Frozen(0x8F9CA3);
 
     private static Brush Frozen(int rgb)
     {
@@ -88,7 +88,9 @@ public class MainViewModel : INotifyPropertyChanged
                 if (calculator.PreparedKey != snapshot.MapKey)
                     calculator.Prepare(snapshot);
 
-                var result = calculator.CalculateLive(snapshot);
+                // In compact mode we only surface SR/delta/live-SR, so skip the pricier
+                // per-frame PP computation (skills/graph are skipped in ApplyResult).
+                var result = calculator.CalculateLive(snapshot, includePp: !compactMode);
                 Dispatch(() => ApplyResult(snapshot, result));
             }
             catch (Exception ex)
@@ -125,8 +127,13 @@ public class MainViewModel : INotifyPropertyChanged
 
             ApplyDelta(result.Stars, s.OfficialStars);
 
-            Diagnostics = $"Debug payload: {DebugLogPath}";
-            UpdateSkills(result.Skills);
+            // Skills breakdown + graph are hidden in compact mode, so don't spend time
+            // rebuilding the legend or re-rendering the strain graph while minimized.
+            if (!compactMode)
+            {
+                Diagnostics = $"Debug payload: {DebugLogPath}";
+                UpdateSkills(result.Skills);
+            }
         }
         else
         {
@@ -166,26 +173,29 @@ public class MainViewModel : INotifyPropertyChanged
 
         if (delta >= 0.005)
         {
-            DeltaBrush = positive_delta;
+            DeltaBrush = PositiveDelta;
             ConclusionText = "Buffed";
-            ConclusionBrush = positive_delta;
+            ConclusionBrush = PositiveDelta;
         }
         else if (delta <= -0.005)
         {
-            DeltaBrush = negative_delta;
+            DeltaBrush = NegativeDelta;
             ConclusionText = "Nerfed";
-            ConclusionBrush = negative_delta;
+            ConclusionBrush = NegativeDelta;
         }
         else
         {
-            DeltaBrush = neutral_delta;
+            DeltaBrush = NeutralDelta;
             ConclusionText = "≈ same";
-            ConclusionBrush = neutral_delta;
+            ConclusionBrush = NeutralDelta;
         }
     }
 
+    private IReadOnlyList<SkillSeries>? lastSkills;
+
     private void UpdateSkills(IReadOnlyList<SkillSeries> skills)
     {
+        lastSkills = skills;
         Skills = skills;
 
         SkillLegend.Clear();
@@ -206,6 +216,29 @@ public class MainViewModel : INotifyPropertyChanged
         else
             app.Dispatcher.BeginInvoke(action);
     }
+
+    private bool compactMode;
+    public bool CompactMode
+    {
+        get => compactMode;
+        set
+        {
+            if (Set(ref compactMode, value))
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullMode)));
+
+                // Leaving compact mode: repopulate the skills breakdown immediately instead of
+                // waiting for the next snapshot (which may not arrive at the menu / when paused).
+                if (!compactMode && lastSkills != null)
+                {
+                    Diagnostics = $"Debug payload: {DebugLogPath}";
+                    UpdateSkills(lastSkills);
+                }
+            }
+        }
+    }
+
+    public bool FullMode => !compactMode;
 
     private bool isConnected;
     public bool IsConnected { get => isConnected; set => Set(ref isConnected, value); }
@@ -255,7 +288,7 @@ public class MainViewModel : INotifyPropertyChanged
     private string deltaText = "";
     public string DeltaText { get => deltaText; set => Set(ref deltaText, value); }
 
-    private Brush deltaBrush = neutral_delta;
+    private Brush deltaBrush = NeutralDelta;
     public Brush DeltaBrush { get => deltaBrush; set => Set(ref deltaBrush, value); }
 
     private bool hasDelta;
@@ -273,7 +306,7 @@ public class MainViewModel : INotifyPropertyChanged
     private string conclusionText = "";
     public string ConclusionText { get => conclusionText; set => Set(ref conclusionText, value); }
 
-    private Brush conclusionBrush = neutral_delta;
+    private Brush conclusionBrush = NeutralDelta;
     public Brush ConclusionBrush { get => conclusionBrush; set => Set(ref conclusionBrush, value); }
 
     private string ppText = "—";
@@ -298,13 +331,14 @@ public class MainViewModel : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    private void Set<T>(ref T field, T value, [CallerMemberName] string? name = null)
+    private bool Set<T>(ref T field, T value, [CallerMemberName] string? name = null)
     {
         if (Equals(field, value))
-            return;
+            return false;
 
         field = value;
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        return true;
     }
 }
 
