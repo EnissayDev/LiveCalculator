@@ -1,12 +1,116 @@
-﻿<Window x:Class="LiveCalculator.MainWindow"
+<Window x:Class="LiveCalculator.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:LiveCalculator"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="LiveCalculator — SR / PP"
+        Height="520" Width="440"
+        MinHeight="480" MinWidth="380"
+        WindowStartupLocation="CenterScreen"
+        Background="#14121A"
+        FontFamily="Segoe UI">
 
+    <Window.Resources>
+        <Style x:Key="Label" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#8A8494" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="TextAlignment" Value="Center" />
+        </Style>
+        <Style x:Key="Value" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#F2EEF7" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="TextAlignment" Value="Center" />
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="18">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Connection status -->
+        <Border Grid.Row="0" CornerRadius="14" Padding="12,6" HorizontalAlignment="Center" Background="#221E2C">
+            <StackPanel Orientation="Horizontal">
+                <Ellipse Width="9" Height="9" VerticalAlignment="Center" Margin="0,0,8,0">
+                    <Ellipse.Style>
+                        <Style TargetType="Ellipse">
+                            <Setter Property="Fill" Value="#E45C6B" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                    <Setter Property="Fill" Value="#63D471" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Ellipse.Style>
+                </Ellipse>
+                <TextBlock Text="{Binding ConnectionStatus}" Foreground="#C9C3D6" FontSize="12" VerticalAlignment="Center" />
+            </StackPanel>
+        </Border>
+
+        <!-- Beatmap header -->
+        <StackPanel Grid.Row="1" Margin="0,22,0,0">
+            <TextBlock Text="{Binding Title}" Foreground="#FFFFFF" FontSize="22" FontWeight="Bold"
+                       TextAlignment="Center" TextTrimming="CharacterEllipsis" />
+            <TextBlock Text="{Binding Artist}" Foreground="#B7B0C4" FontSize="13"
+                       TextAlignment="Center" Margin="0,2,0,0" TextTrimming="CharacterEllipsis" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,6,0,0">
+                <TextBlock Text="{Binding Version}" Foreground="#FF6BA9" FontSize="12" FontWeight="SemiBold" Margin="0,0,8,0" />
+                <TextBlock Text="{Binding Mapper}" Foreground="#7E7890" FontSize="12" />
+            </StackPanel>
+        </StackPanel>
+
+        <!-- Live readout -->
+        <StackPanel Grid.Row="2" VerticalAlignment="Center">
+            <!-- Star rating pill -->
+            <Border CornerRadius="18" Padding="18,7" HorizontalAlignment="Center" Background="{Binding StarBrush}">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="★" Foreground="#1A1622" FontSize="18" VerticalAlignment="Center" Margin="0,0,7,0" />
+                    <TextBlock Text="{Binding CurrentStarsText}" Foreground="#1A1622" FontSize="20" FontWeight="Bold" VerticalAlignment="Center" />
+                </StackPanel>
+            </Border>
+
+            <!-- Big PP -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,26,0,0">
+                <TextBlock Text="{Binding PpText}" Foreground="#FFFFFF" FontSize="76" FontWeight="Bold" />
+                <TextBlock Text="pp" Foreground="#FF6BA9" FontSize="28" FontWeight="Bold" VerticalAlignment="Bottom" Margin="6,0,0,14" />
+            </StackPanel>
+        </StackPanel>
+
+        <!-- Stat row -->
+        <Border Grid.Row="3" CornerRadius="14" Background="#1C1926" Padding="14,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="MAX SR" Style="{StaticResource Label}" />
+                    <TextBlock Text="{Binding MaxStarsText}" Style="{StaticResource Value}" Margin="0,4,0,0" />
+                </StackPanel>
+                <StackPanel Grid.Column="1">
+                    <TextBlock Text="ACCURACY" Style="{StaticResource Label}" />
+                    <TextBlock Text="{Binding AccuracyText}" Style="{StaticResource Value}" Margin="0,4,0,0" />
+                </StackPanel>
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="COMBO" Style="{StaticResource Label}" />
+                    <TextBlock Text="{Binding ComboText}" Style="{StaticResource Value}" Margin="0,4,0,0" />
+                </StackPanel>
+                <StackPanel Grid.Column="3">
+                    <TextBlock Text="MODS" Style="{StaticResource Label}" />
+                    <TextBlock Text="{Binding ModsText}" Style="{StaticResource Value}" Margin="0,4,0,0"
+                               TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+            </Grid>
+        </Border>
     </Grid>
 </Window>

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
@@ -6,6 +6,18 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <UseWPF>true</UseWPF>
+        <!-- osu.Game surfaces a lot of nullable/analyzer noise we don't want failing our build. -->
+        <NoWarn>$(NoWarn);CS8600;CS8601;CS8602;CS8603;CS8604;CS8618;CS8625;CA1416</NoWarn>
     </PropertyGroup>
+
+    <!-- Live SR/PP is computed by referencing the local osu!lazer source (osu2, branch enissay-mania-sr-rework),
+         exactly like osutoolsenissayrework/PerformanceCalculator does. Paths are relative siblings under D:\RiderProjects. -->
+    <ItemGroup>
+        <ProjectReference Include="..\..\osu2\osu.Game.Rulesets.Catch\osu.Game.Rulesets.Catch.csproj" />
+        <ProjectReference Include="..\..\osu2\osu.Game.Rulesets.Mania\osu.Game.Rulesets.Mania.csproj" />
+        <ProjectReference Include="..\..\osu2\osu.Game.Rulesets.Osu\osu.Game.Rulesets.Osu.csproj" />
+        <ProjectReference Include="..\..\osu2\osu.Game.Rulesets.Taiko\osu.Game.Rulesets.Taiko.csproj" />
+        <ProjectReference Include="..\..\osu2\osu.Game\osu.Game.csproj" />
+    </ItemGroup>
 
 </Project>
