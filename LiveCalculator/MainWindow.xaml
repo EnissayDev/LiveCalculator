@@ -7,8 +7,8 @@
         xmlns:ctrl="clr-namespace:LiveCalculator.Controls"
         mc:Ignorable="d"
         Title="Enissay Rework | Calc"
-        Height="720" Width="470"
-        MinHeight="620" MinWidth="420"
+        Height="880" Width="470"
+        MinHeight="760" MinWidth="420"
         WindowStartupLocation="CenterScreen"
         Background="#171A1C"
         FontFamily="pack://application:,,,/Assets/Fonts/#Poppins, Segoe UI">
@@ -145,11 +145,18 @@
                            VerticalAlignment="Center" Margin="9,0,0,0" />
             </StackPanel>
 
-            <!-- Big PP (full mode only) -->
+            <!-- Big PP — current / max (full mode only) -->
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,16,0,0"
                         Visibility="{Binding FullMode, Converter={StaticResource BoolToVisibility}}">
-                <TextBlock Text="{Binding PpText}" Foreground="#FFFFFF" FontSize="66" FontWeight="Bold" />
-                <TextBlock Text="pp" Foreground="#FF66AA" FontSize="26" FontWeight="Bold" VerticalAlignment="Bottom" Margin="6,0,0,12" />
+                <TextBlock Text="{Binding PpText}" Foreground="#FFFFFF" FontSize="50" FontWeight="Bold" />
+                <TextBlock Text="pp" Foreground="#FF66AA" FontSize="22" FontWeight="Bold" VerticalAlignment="Bottom" Margin="6,0,0,9" />
+            </StackPanel>
+
+            <!-- Compact PP — current / max (compact mode only) -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0"
+                        Visibility="{Binding CompactMode, Converter={StaticResource BoolToVisibility}}">
+                <TextBlock Text="{Binding PpText}" Foreground="#FFFFFF" FontSize="22" FontWeight="Bold" />
+                <TextBlock Text="pp" Foreground="#FF66AA" FontSize="13" FontWeight="Bold" VerticalAlignment="Bottom" Margin="4,0,0,3" />
             </StackPanel>
         </StackPanel>
 

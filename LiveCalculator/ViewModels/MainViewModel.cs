@@ -88,9 +88,7 @@ public class MainViewModel : INotifyPropertyChanged
                 if (_calculator.PreparedKey != snapshot.MapKey)
                     _calculator.Prepare(snapshot);
 
-                // In compact mode we only surface SR/delta/live-SR, so skip the pricier
-                // per-frame PP computation (skills/graph are skipped in ApplyResult).
-                var result = _calculator.CalculateLive(snapshot, includePp: !_compactMode);
+                var result = _calculator.CalculateLive(snapshot);
                 Dispatch(() => ApplyResult(snapshot, result));
             }
             catch (Exception ex)
@@ -116,7 +114,9 @@ public class MainViewModel : INotifyPropertyChanged
             CurrentStars = result.Stars;
             CurrentStarsText = result.Stars.ToString("0.00", CultureInfo.InvariantCulture);
             MaxStarsText = result.Stars.ToString("0.00", CultureInfo.InvariantCulture);
-            PpText = result.Pp.ToString("0", CultureInfo.InvariantCulture);
+            PpText = result.MaxPp > 0
+                ? $"{result.Pp.ToString("0", CultureInfo.InvariantCulture)}/{result.MaxPp.ToString("0", CultureInfo.InvariantCulture)}"
+                : result.Pp.ToString("0", CultureInfo.InvariantCulture);
             StarBrush = StarRatingColour.PillBrush(result.Stars);
             StarTextBrush = StarRatingColour.TextBrush(result.Stars);
 

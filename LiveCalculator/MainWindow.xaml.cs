@@ -44,7 +44,7 @@ public partial class MainWindow : Window
             Topmost = false;
             ResizeMode = ResizeMode.CanResize;
             MinWidth = 420;
-            MinHeight = 620;
+            MinHeight = 760;
             Width = _savedWidth;
             Height = _savedHeight;
         }

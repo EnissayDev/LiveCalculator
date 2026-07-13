@@ -16,7 +16,7 @@ namespace LiveCalculator.Osu;
 
 public record SkillSeries(string Name, IReadOnlyList<double> Difficulties, double Value);
 
-public record LiveResult(double Stars, double? CurrentStars, bool CurrentReady, double Pp, int MaxCombo, IReadOnlyList<SkillSeries> Skills);
+public record LiveResult(double Stars, double? CurrentStars, bool CurrentReady, double Pp, double MaxPp, int MaxCombo, IReadOnlyList<SkillSeries> Skills);
 
 public class LiveDifficultyCalculator
 {
@@ -58,6 +58,8 @@ public class LiveDifficultyCalculator
 
             var full = difficultyCalculator.Calculate(mods);
 
+            var performanceCalculator = ruleset.CreatePerformanceCalculator();
+
             _prepared = new PreparedMap
             {
                 Key = snapshot.MapKey,
@@ -65,8 +67,9 @@ public class LiveDifficultyCalculator
                 Mods = mods,
                 Playable = playable,
                 FullAttributes = full,
-                PerformanceCalculator = ruleset.CreatePerformanceCalculator(),
+                PerformanceCalculator = performanceCalculator,
                 MaxCombo = playable.GetMaxCombo(),
+                MaxPp = CalculateMaxPp(ruleset, playable, mods, full, performanceCalculator),
                 Skills = ExtractSkills(difficultyCalculator)
             };
 
@@ -121,7 +124,7 @@ public class LiveDifficultyCalculator
         }, cts.Token);
     }
 
-    public LiveResult? CalculateLive(LiveSnapshot snapshot, bool includePp = true)
+    public LiveResult? CalculateLive(LiveSnapshot snapshot)
     {
         var map = _prepared;
         if (map == null || map.Key != snapshot.MapKey)
@@ -145,7 +148,7 @@ public class LiveDifficultyCalculator
 
             double pp = 0;
 
-            if (includePp && judged > 0 && map.PerformanceCalculator != null)
+            if (judged > 0 && map.PerformanceCalculator != null)
             {
                 var score = new ScoreInfo(map.Playable.BeatmapInfo, map.Ruleset.RulesetInfo)
                 {
@@ -158,12 +161,40 @@ public class LiveDifficultyCalculator
                 pp = map.PerformanceCalculator.Calculate(score, map.FullAttributes).Total;
             }
 
-            return new LiveResult(stars, currentStars, currentReady, pp, map.MaxCombo, map.Skills);
+            return new LiveResult(stars, currentStars, currentReady, pp, map.MaxPp, map.MaxCombo, map.Skills);
         }
         catch (Exception ex)
         {
             Status = $"Live calc error: {ex.GetType().Name}: {ex.Message}";
             return null;
+        }
+    }
+
+    // Max PP = the SS/perfect play on this map with the current mods. Constant per map, so we
+    // compute it once in Prepare using the ruleset's own "maximum statistics" (a real perfect play).
+    private static double CalculateMaxPp(Ruleset ruleset, IBeatmap playable, Mod[] mods, DifficultyAttributes attributes, PerformanceCalculator? performanceCalculator)
+    {
+        if (performanceCalculator == null)
+            return 0;
+
+        try
+        {
+            var scoreProcessor = ruleset.CreateScoreProcessor();
+            scoreProcessor.ApplyBeatmap(playable);
+
+            var perfectScore = new ScoreInfo(playable.BeatmapInfo, ruleset.RulesetInfo)
+            {
+                Accuracy = 1.0,
+                MaxCombo = playable.GetMaxCombo(),
+                Statistics = scoreProcessor.MaximumStatistics,
+                Mods = mods
+            };
+
+            return performanceCalculator.Calculate(perfectScore, attributes).Total;
+        }
+        catch
+        {
+            return 0;
         }
     }
 
@@ -257,6 +288,7 @@ public class LiveDifficultyCalculator
         public required DifficultyAttributes FullAttributes { get; init; }
         public required PerformanceCalculator? PerformanceCalculator { get; init; }
         public required int MaxCombo { get; init; }
+        public required double MaxPp { get; init; }
         public required IReadOnlyList<SkillSeries> Skills { get; init; }
     }
 
