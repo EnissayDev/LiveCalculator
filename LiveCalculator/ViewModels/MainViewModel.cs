@@ -100,12 +100,20 @@ public class MainViewModel : INotifyPropertyChanged
 
         if (result != null)
         {
-            CurrentStars = result.CurrentStars;
-            CurrentStarsText = result.CurrentStars.ToString("0.00", CultureInfo.InvariantCulture);
-            MaxStarsText = result.MaxStars.ToString("0.00", CultureInfo.InvariantCulture);
+            CurrentStars = result.Stars;
+            CurrentStarsText = result.Stars.ToString("0.00", CultureInfo.InvariantCulture);
+            MaxStarsText = result.Stars.ToString("0.00", CultureInfo.InvariantCulture);
             PpText = result.Pp.ToString("0", CultureInfo.InvariantCulture);
-            StarBrush = StarRatingColour.PillBrush(result.CurrentStars);
-            StarTextBrush = StarRatingColour.TextBrush(result.CurrentStars);
+            StarBrush = StarRatingColour.PillBrush(result.Stars);
+            StarTextBrush = StarRatingColour.TextBrush(result.Stars);
+
+            if (!result.CurrentReady)
+                LiveSrText = "live …";
+            else if (result.CurrentStars.HasValue)
+                LiveSrText = $"live {result.CurrentStars.Value.ToString("0.00", CultureInfo.InvariantCulture)}★";
+            else
+                LiveSrText = $"live {result.Stars.ToString("0.00", CultureInfo.InvariantCulture)}★";
+
             Diagnostics = $"Debug payload: {DebugLogPath}";
             updateSkills(result.Skills);
         }
@@ -114,6 +122,7 @@ public class MainViewModel : INotifyPropertyChanged
             CurrentStarsText = "—";
             MaxStarsText = "—";
             PpText = "—";
+            LiveSrText = "";
             Diagnostics = calculator.Status;
             updateSkills(Array.Empty<SkillSeries>());
         }
@@ -180,6 +189,9 @@ public class MainViewModel : INotifyPropertyChanged
 
     private string maxStarsText = "—";
     public string MaxStarsText { get => maxStarsText; set => set(ref maxStarsText, value); }
+
+    private string liveSrText = "";
+    public string LiveSrText { get => liveSrText; set => set(ref liveSrText, value); }
 
     private string ppText = "—";
     public string PpText { get => ppText; set => set(ref ppText, value); }

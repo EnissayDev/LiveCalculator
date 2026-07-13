@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using LiveCalculator.Tosu;
 using osu.Game.Beatmaps;
 using osu.Game.Online.API;
@@ -14,11 +16,14 @@ namespace LiveCalculator.Osu;
 
 public record SkillSeries(string Name, IReadOnlyList<double> Difficulties, double Value);
 
-public record LiveResult(double CurrentStars, double MaxStars, double Pp, int MaxCombo, IReadOnlyList<SkillSeries> Skills);
+public record LiveResult(double Stars, double? CurrentStars, bool CurrentReady, double Pp, int MaxCombo, IReadOnlyList<SkillSeries> Skills);
 
 public class LiveDifficultyCalculator
 {
     private PreparedMap? prepared;
+
+    private CancellationTokenSource? timedCts;
+    private volatile TimedData? timedData;
 
     public string? PreparedKey => prepared?.Key;
 
@@ -27,6 +32,7 @@ public class LiveDifficultyCalculator
     public void Prepare(LiveSnapshot snapshot)
     {
         prepared = null;
+        cancelTimed();
 
         if (string.IsNullOrEmpty(snapshot.BeatmapFile))
         {
@@ -65,12 +71,54 @@ public class LiveDifficultyCalculator
             };
 
             Status = "";
+
+            // Progressive per-position SR is expensive (CalculateTimed is ~O(n^2) on long maps),
+            // so compute it off-thread. The main SR/PP is already available above.
+            startTimedComputation(snapshot);
         }
         catch (Exception ex)
         {
             prepared = null;
             Status = $"Calc failed for {System.IO.Path.GetFileName(snapshot.BeatmapFile)}: {ex.GetType().Name}: {ex.Message}";
         }
+    }
+
+    private void cancelTimed()
+    {
+        timedCts?.Cancel();
+        timedCts?.Dispose();
+        timedCts = null;
+        timedData = null;
+    }
+
+    private void startTimedComputation(LiveSnapshot snapshot)
+    {
+        var cts = new CancellationTokenSource();
+        timedCts = cts;
+        string key = snapshot.MapKey;
+        string file = snapshot.BeatmapFile!;
+        int rulesetId = snapshot.RulesetId;
+        var modAcronyms = snapshot.Mods;
+
+        Task.Run(() =>
+        {
+            try
+            {
+                // Fully isolated from the foreground calc: fresh beatmap, ruleset and mods.
+                var ruleset = LegacyHelper.GetRulesetFromLegacyId(rulesetId);
+                var working = new ProcessorWorkingBeatmap(file);
+                var mods = parseMods(ruleset, modAcronyms);
+
+                var timed = ruleset.CreateDifficultyCalculator(working).CalculateTimed(mods, cts.Token);
+
+                if (!cts.Token.IsCancellationRequested)
+                    timedData = new TimedData(key, timed);
+            }
+            catch
+            {
+                // Cancelled (map changed) or failed — leave progressive SR unavailable.
+            }
+        }, cts.Token);
     }
 
     public LiveResult? CalculateLive(LiveSnapshot snapshot)
@@ -82,8 +130,18 @@ public class LiveDifficultyCalculator
         try
         {
             double stars = map.FullAttributes.StarRating;
-
             int judged = snapshot.JudgedObjects;
+
+            var timed = timedData;
+            bool currentReady = timed != null && timed.Key == map.Key;
+            double? currentStars = null;
+
+            if (currentReady && timed!.Timed.Count > 0 && judged > 0)
+            {
+                int index = Math.Min(judged - 1, timed.Timed.Count - 1);
+                currentStars = timed.Timed[index].Attributes.StarRating;
+            }
+
             double pp = 0;
 
             if (judged > 0 && map.PerformanceCalculator != null)
@@ -99,7 +157,7 @@ public class LiveDifficultyCalculator
                 pp = map.PerformanceCalculator.Calculate(score, map.FullAttributes).Total;
             }
 
-            return new LiveResult(stars, stars, pp, map.MaxCombo, map.Skills);
+            return new LiveResult(stars, currentStars, currentReady, pp, map.MaxCombo, map.Skills);
         }
         catch (Exception ex)
         {
@@ -199,5 +257,17 @@ public class LiveDifficultyCalculator
         public required PerformanceCalculator? PerformanceCalculator { get; init; }
         public required int MaxCombo { get; init; }
         public required IReadOnlyList<SkillSeries> Skills { get; init; }
+    }
+
+    private class TimedData
+    {
+        public TimedData(string key, IReadOnlyList<TimedDifficultyAttributes> timed)
+        {
+            Key = key;
+            Timed = timed;
+        }
+
+        public string Key { get; }
+        public IReadOnlyList<TimedDifficultyAttributes> Timed { get; }
     }
 }
