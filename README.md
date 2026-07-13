@@ -1,6 +1,6 @@
 # LiveCalculator
 
-A live visualizer (thanks claude) for the **Enissay rework** (needs the rework's folder though)
+A live visualizer (thanks claude i'm too lazy for ts) for the **Enissay rework** (needs the rework's folder though)
 
 It reads the currently played beatmap and gameplay state from [tosu](https://github.com/tosuapp/tosu) over its websocket, runs the local rework calculators, and renders the results (star-rating pill, live PP, per-skill graphs).
 
