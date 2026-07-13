@@ -6,12 +6,12 @@ public static class SkillPalette
 {
     private static readonly Color[] colours =
     {
-        fromHex(0x66CCFF),
-        fromHex(0x88B300),
-        fromHex(0xED1121),
-        fromHex(0xFFCC22),
-        fromHex(0xFF66AA),
-        fromHex(0x05F4FD),
+        FromHex(0x66CCFF),
+        FromHex(0x88B300),
+        FromHex(0xED1121),
+        FromHex(0xFFCC22),
+        FromHex(0xFF66AA),
+        FromHex(0x05F4FD),
     };
 
     public static Color ForIndex(int index) => colours[index % colours.Length];
@@ -23,6 +23,6 @@ public static class SkillPalette
         return brush;
     }
 
-    private static Color fromHex(int rgb) =>
+    private static Color FromHex(int rgb) =>
         Color.FromRgb((byte)((rgb >> 16) & 0xFF), (byte)((rgb >> 8) & 0xFF), (byte)(rgb & 0xFF));
 }

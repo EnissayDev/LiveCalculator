@@ -24,11 +24,11 @@ public class MainViewModel : INotifyPropertyChanged
     private LiveSnapshot? pendingSnapshot;
     private CancellationTokenSource? workerCts;
 
-    private static readonly Brush positive_delta = frozen(0x88B300);
-    private static readonly Brush negative_delta = frozen(0xED1121);
-    private static readonly Brush neutral_delta = frozen(0x8F9CA3);
+    private static readonly Brush positive_delta = Frozen(0x88B300);
+    private static readonly Brush negative_delta = Frozen(0xED1121);
+    private static readonly Brush neutral_delta = Frozen(0x8F9CA3);
 
-    private static Brush frozen(int rgb)
+    private static Brush Frozen(int rgb)
     {
         var brush = new SolidColorBrush(Color.FromRgb((byte)((rgb >> 16) & 0xFF), (byte)((rgb >> 8) & 0xFF), (byte)(rgb & 0xFF)));
         brush.Freeze();
@@ -37,8 +37,8 @@ public class MainViewModel : INotifyPropertyChanged
 
     public MainViewModel()
     {
-        client.ConnectionChanged += onConnectionChanged;
-        client.SnapshotReceived += onSnapshotReceived;
+        client.ConnectionChanged += OnConnectionChanged;
+        client.SnapshotReceived += OnSnapshotReceived;
     }
 
     public string DebugLogPath { get; } = Path.Combine(Path.GetTempPath(), "livecalculator-tosu.json");
@@ -47,7 +47,7 @@ public class MainViewModel : INotifyPropertyChanged
     {
         client.DebugLogPath = DebugLogPath;
         workerCts = new CancellationTokenSource();
-        _ = Task.Run(() => processLoop(workerCts.Token));
+        _ = Task.Run(() => ProcessLoop(workerCts.Token));
         client.Start();
     }
 
@@ -58,22 +58,22 @@ public class MainViewModel : INotifyPropertyChanged
         signal.Set();
     }
 
-    private void onConnectionChanged(bool connected, string message)
+    private void OnConnectionChanged(bool connected, string message)
     {
-        dispatch(() =>
+        Dispatch(() =>
         {
             IsConnected = connected;
             ConnectionStatus = message;
         });
     }
 
-    private void onSnapshotReceived(LiveSnapshot snapshot)
+    private void OnSnapshotReceived(LiveSnapshot snapshot)
     {
         Interlocked.Exchange(ref pendingSnapshot, snapshot);
         signal.Set();
     }
 
-    private void processLoop(CancellationToken token)
+    private void ProcessLoop(CancellationToken token)
     {
         while (!token.IsCancellationRequested)
         {
@@ -89,16 +89,16 @@ public class MainViewModel : INotifyPropertyChanged
                     calculator.Prepare(snapshot);
 
                 var result = calculator.CalculateLive(snapshot);
-                dispatch(() => applyResult(snapshot, result));
+                Dispatch(() => ApplyResult(snapshot, result));
             }
             catch (Exception ex)
             {
-                dispatch(() => ConnectionStatus = $"Calc error: {ex.Message}");
+                Dispatch(() => ConnectionStatus = $"Calc error: {ex.Message}");
             }
         }
     }
 
-    private void applyResult(LiveSnapshot s, LiveResult? result)
+    private void ApplyResult(LiveSnapshot s, LiveResult? result)
     {
         Title = string.IsNullOrEmpty(s.Title) ? "—" : s.Title;
         Artist = s.Artist;
@@ -123,10 +123,10 @@ public class MainViewModel : INotifyPropertyChanged
             else
                 LiveSrText = "live …";
 
-            applyDelta(result.Stars, s.OfficialStars);
+            ApplyDelta(result.Stars, s.OfficialStars);
 
             Diagnostics = $"Debug payload: {DebugLogPath}";
-            updateSkills(result.Skills);
+            UpdateSkills(result.Skills);
         }
         else
         {
@@ -139,11 +139,11 @@ public class MainViewModel : INotifyPropertyChanged
             ConclusionText = "";
             HasDelta = false;
             Diagnostics = calculator.Status;
-            updateSkills(Array.Empty<SkillSeries>());
+            UpdateSkills(Array.Empty<SkillSeries>());
         }
     }
 
-    private void applyDelta(double reworkStars, double officialStars)
+    private void ApplyDelta(double reworkStars, double officialStars)
     {
         if (officialStars <= 0)
         {
@@ -184,7 +184,7 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
-    private void updateSkills(IReadOnlyList<SkillSeries> skills)
+    private void UpdateSkills(IReadOnlyList<SkillSeries> skills)
     {
         Skills = skills;
 
@@ -195,7 +195,7 @@ public class MainViewModel : INotifyPropertyChanged
         HasSkills = skills.Count > 0;
     }
 
-    private static void dispatch(Action action)
+    private static void Dispatch(Action action)
     {
         var app = Application.Current;
         if (app == null)
@@ -208,97 +208,97 @@ public class MainViewModel : INotifyPropertyChanged
     }
 
     private bool isConnected;
-    public bool IsConnected { get => isConnected; set => set(ref isConnected, value); }
+    public bool IsConnected { get => isConnected; set => Set(ref isConnected, value); }
 
     private string connectionStatus = "Starting…";
-    public string ConnectionStatus { get => connectionStatus; set => set(ref connectionStatus, value); }
+    public string ConnectionStatus { get => connectionStatus; set => Set(ref connectionStatus, value); }
 
     private string title = "Waiting for osu!…";
-    public string Title { get => title; set => set(ref title, value); }
+    public string Title { get => title; set => Set(ref title, value); }
 
     private string artist = "";
-    public string Artist { get => artist; set => set(ref artist, value); }
+    public string Artist { get => artist; set => Set(ref artist, value); }
 
     private string version = "";
-    public string Version { get => version; set => set(ref version, value); }
+    public string Version { get => version; set => Set(ref version, value); }
 
     private string mapper = "";
-    public string Mapper { get => mapper; set => set(ref mapper, value); }
+    public string Mapper { get => mapper; set => Set(ref mapper, value); }
 
     private string modsText = "NoMod";
-    public string ModsText { get => modsText; set => set(ref modsText, value); }
+    public string ModsText { get => modsText; set => Set(ref modsText, value); }
 
     private string stateText = "—";
-    public string StateText { get => stateText; set => set(ref stateText, value); }
+    public string StateText { get => stateText; set => Set(ref stateText, value); }
 
     private string accuracyText = "100.00%";
-    public string AccuracyText { get => accuracyText; set => set(ref accuracyText, value); }
+    public string AccuracyText { get => accuracyText; set => Set(ref accuracyText, value); }
 
     private string comboText = "0x / 0x";
-    public string ComboText { get => comboText; set => set(ref comboText, value); }
+    public string ComboText { get => comboText; set => Set(ref comboText, value); }
 
     private double currentStars;
-    public double CurrentStars { get => currentStars; set => set(ref currentStars, value); }
+    public double CurrentStars { get => currentStars; set => Set(ref currentStars, value); }
 
     private string currentStarsText = "—";
-    public string CurrentStarsText { get => currentStarsText; set => set(ref currentStarsText, value); }
+    public string CurrentStarsText { get => currentStarsText; set => Set(ref currentStarsText, value); }
 
     private string maxStarsText = "—";
-    public string MaxStarsText { get => maxStarsText; set => set(ref maxStarsText, value); }
+    public string MaxStarsText { get => maxStarsText; set => Set(ref maxStarsText, value); }
 
     private string liveSrText = "";
-    public string LiveSrText { get => liveSrText; set => set(ref liveSrText, value); }
+    public string LiveSrText { get => liveSrText; set => Set(ref liveSrText, value); }
 
     private string officialSrText = "—";
-    public string OfficialSrText { get => officialSrText; set => set(ref officialSrText, value); }
+    public string OfficialSrText { get => officialSrText; set => Set(ref officialSrText, value); }
 
     private string deltaText = "";
-    public string DeltaText { get => deltaText; set => set(ref deltaText, value); }
+    public string DeltaText { get => deltaText; set => Set(ref deltaText, value); }
 
     private Brush deltaBrush = neutral_delta;
-    public Brush DeltaBrush { get => deltaBrush; set => set(ref deltaBrush, value); }
+    public Brush DeltaBrush { get => deltaBrush; set => Set(ref deltaBrush, value); }
 
     private bool hasDelta;
-    public bool HasDelta { get => hasDelta; set => set(ref hasDelta, value); }
+    public bool HasDelta { get => hasDelta; set => Set(ref hasDelta, value); }
 
     private string oldStarsText = "—";
-    public string OldStarsText { get => oldStarsText; set => set(ref oldStarsText, value); }
+    public string OldStarsText { get => oldStarsText; set => Set(ref oldStarsText, value); }
 
     private Brush oldStarBrush = StarRatingColour.PillBrush(0);
-    public Brush OldStarBrush { get => oldStarBrush; set => set(ref oldStarBrush, value); }
+    public Brush OldStarBrush { get => oldStarBrush; set => Set(ref oldStarBrush, value); }
 
     private Brush oldStarTextBrush = StarRatingColour.TextBrush(0);
-    public Brush OldStarTextBrush { get => oldStarTextBrush; set => set(ref oldStarTextBrush, value); }
+    public Brush OldStarTextBrush { get => oldStarTextBrush; set => Set(ref oldStarTextBrush, value); }
 
     private string conclusionText = "";
-    public string ConclusionText { get => conclusionText; set => set(ref conclusionText, value); }
+    public string ConclusionText { get => conclusionText; set => Set(ref conclusionText, value); }
 
     private Brush conclusionBrush = neutral_delta;
-    public Brush ConclusionBrush { get => conclusionBrush; set => set(ref conclusionBrush, value); }
+    public Brush ConclusionBrush { get => conclusionBrush; set => Set(ref conclusionBrush, value); }
 
     private string ppText = "—";
-    public string PpText { get => ppText; set => set(ref ppText, value); }
+    public string PpText { get => ppText; set => Set(ref ppText, value); }
 
     private Brush starBrush = StarRatingColour.PillBrush(0);
-    public Brush StarBrush { get => starBrush; set => set(ref starBrush, value); }
+    public Brush StarBrush { get => starBrush; set => Set(ref starBrush, value); }
 
     private Brush starTextBrush = StarRatingColour.TextBrush(0);
-    public Brush StarTextBrush { get => starTextBrush; set => set(ref starTextBrush, value); }
+    public Brush StarTextBrush { get => starTextBrush; set => Set(ref starTextBrush, value); }
 
     private string diagnostics = "";
-    public string Diagnostics { get => diagnostics; set => set(ref diagnostics, value); }
+    public string Diagnostics { get => diagnostics; set => Set(ref diagnostics, value); }
 
     private IReadOnlyList<SkillSeries> skills = System.Array.Empty<SkillSeries>();
-    public IReadOnlyList<SkillSeries> Skills { get => skills; set => set(ref skills, value); }
+    public IReadOnlyList<SkillSeries> Skills { get => skills; set => Set(ref skills, value); }
 
     private bool hasSkills;
-    public bool HasSkills { get => hasSkills; set => set(ref hasSkills, value); }
+    public bool HasSkills { get => hasSkills; set => Set(ref hasSkills, value); }
 
     public ObservableCollection<SkillLegendItem> SkillLegend { get; } = new();
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    private void set<T>(ref T field, T value, [CallerMemberName] string? name = null)
+    private void Set<T>(ref T field, T value, [CallerMemberName] string? name = null)
     {
         if (Equals(field, value))
             return;

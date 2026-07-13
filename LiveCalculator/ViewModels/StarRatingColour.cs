@@ -10,37 +10,37 @@ public static class StarRatingColour
 
     private static readonly (double pos, Color colour)[] star_spectrum =
     {
-        (0.1, fromHex(0xAAAAAA)),
-        (0.1, fromHex(0x4290FB)),
-        (1.25, fromHex(0x4FC0FF)),
-        (2.0, fromHex(0x4FFFD5)),
-        (2.5, fromHex(0x7CFF4F)),
-        (3.3, fromHex(0xF6F05C)),
-        (4.2, fromHex(0xFF8068)),
-        (4.9, fromHex(0xFF4E6F)),
-        (5.8, fromHex(0xC645B8)),
-        (6.7, fromHex(0x6563DE)),
-        (7.7, fromHex(0x18158E)),
-        (9.0, fromHex(0x000000)),
-        (10.0, fromHex(0x000000)),
+        (0.1, FromHex(0xAAAAAA)),
+        (0.1, FromHex(0x4290FB)),
+        (1.25, FromHex(0x4FC0FF)),
+        (2.0, FromHex(0x4FFFD5)),
+        (2.5, FromHex(0x7CFF4F)),
+        (3.3, FromHex(0xF6F05C)),
+        (4.2, FromHex(0xFF8068)),
+        (4.9, FromHex(0xFF4E6F)),
+        (5.8, FromHex(0xC645B8)),
+        (6.7, FromHex(0x6563DE)),
+        (7.7, FromHex(0x18158E)),
+        (9.0, FromHex(0x000000)),
+        (10.0, FromHex(0x000000)),
     };
 
     private static readonly (double pos, Color colour)[] text_spectrum =
     {
-        (9.0, fromHex(0xF6F05C)),
-        (9.9, fromHex(0xFF8068)),
-        (10.6, fromHex(0xFF4E6F)),
-        (11.5, fromHex(0xC645B8)),
-        (12.4, fromHex(0x6563DE)),
+        (9.0, FromHex(0xF6F05C)),
+        (9.9, FromHex(0xFF8068)),
+        (10.6, FromHex(0xFF4E6F)),
+        (11.5, FromHex(0xC645B8)),
+        (12.4, FromHex(0x6563DE)),
     };
 
-    private static readonly Color orange1 = fromHex(0xFFD966);
+    private static readonly Color orange1 = FromHex(0xFFD966);
 
-    public static Color ForStars(double stars) => sample(star_spectrum, stars);
+    public static Color ForStars(double stars) => Sample(star_spectrum, stars);
 
     public static Brush PillBrush(double stars)
     {
-        var brush = new SolidColorBrush(withAlpha(darken(sample(star_spectrum, stars), 0.1), 0.75));
+        var brush = new SolidColorBrush(WithAlpha(Darken(Sample(star_spectrum, stars), 0.1), 0.75));
         brush.Freeze();
         return brush;
     }
@@ -55,15 +55,15 @@ public static class StarRatingColour
     public static Color ForStarsText(double stars)
     {
         if (stars < defined_colour_cutoff)
-            return withAlpha(Colors.Black, 0.75);
+            return WithAlpha(Colors.Black, 0.75);
 
         if (stars < text_gradient_cutoff)
             return orange1;
 
-        return sample(text_spectrum, stars);
+        return Sample(text_spectrum, stars);
     }
 
-    private static Color sample((double pos, Color colour)[] stops, double value)
+    private static Color Sample((double pos, Color colour)[] stops, double value)
     {
         value = Math.Round(value, 2, MidpointRounding.AwayFromZero);
 
@@ -83,22 +83,22 @@ public static class StarRatingColour
                 return stops[i].colour;
 
             double t = (value - lo) / (hi - lo);
-            return lerp(stops[i - 1].colour, stops[i].colour, t);
+            return Lerp(stops[i - 1].colour, stops[i].colour, t);
         }
 
         return stops[^1].colour;
     }
 
-    private static Color darken(Color c, double amount)
+    private static Color Darken(Color c, double amount)
     {
         double factor = 1.0 / (1.0 + amount);
         return Color.FromRgb((byte)(c.R * factor), (byte)(c.G * factor), (byte)(c.B * factor));
     }
 
-    private static Color withAlpha(Color c, double alpha) =>
+    private static Color WithAlpha(Color c, double alpha) =>
         Color.FromArgb((byte)Math.Clamp(alpha * 255, 0, 255), c.R, c.G, c.B);
 
-    private static Color lerp(Color a, Color b, double t)
+    private static Color Lerp(Color a, Color b, double t)
     {
         t = Math.Clamp(t, 0, 1);
         return Color.FromRgb(
@@ -107,6 +107,6 @@ public static class StarRatingColour
             (byte)(a.B + (b.B - a.B) * t));
     }
 
-    private static Color fromHex(int rgb) =>
+    private static Color FromHex(int rgb) =>
         Color.FromRgb((byte)((rgb >> 16) & 0xFF), (byte)((rgb >> 8) & 0xFF), (byte)(rgb & 0xFF));
 }

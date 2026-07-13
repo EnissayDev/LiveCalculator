@@ -74,20 +74,20 @@ public class SkillGraph : Canvas
             Children.Add(new Polygon
             {
                 Points = area,
-                Fill = frozenBrush(colour, fillAlpha)
+                Fill = FrozenBrush(colour, fillAlpha)
             });
 
             Children.Add(new Polyline
             {
                 Points = line,
-                Stroke = frozenBrush(colour, strokeAlpha),
+                Stroke = FrozenBrush(colour, strokeAlpha),
                 StrokeThickness = 1.4,
                 StrokeLineJoin = PenLineJoin.Round
             });
         }
     }
 
-    private static Brush frozenBrush(Color colour, double alpha)
+    private static Brush FrozenBrush(Color colour, double alpha)
     {
         var brush = new SolidColorBrush(Color.FromArgb((byte)Math.Clamp(alpha * 255, 0, 255), colour.R, colour.G, colour.B));
         brush.Freeze();

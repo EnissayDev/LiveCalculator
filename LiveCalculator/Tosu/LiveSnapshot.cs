@@ -53,7 +53,7 @@ public class LiveSnapshot
 
         return new LiveSnapshot
         {
-            BeatmapFile = resolveBeatmapFile(p),
+            BeatmapFile = ResolveBeatmapFile(p),
             RulesetId = beatmap?.Mode?.Number ?? 0,
             Artist = beatmap?.Artist ?? "",
             Title = beatmap?.Title ?? "",
@@ -75,24 +75,15 @@ public class LiveSnapshot
         };
     }
 
-    private static string? resolveBeatmapFile(TosuPayload p)
+    private static string? ResolveBeatmapFile(TosuPayload p)
     {
         // tosu reports directPath.beatmapFile relative to the Songs directory (folders.songs),
         // so relative candidates must be rooted against it.
         string? songs = p.Folders?.Songs;
 
-        string? makeAbsolute(string? path)
-        {
-            if (string.IsNullOrEmpty(path))
-                return null;
-            if (System.IO.Path.IsPathRooted(path))
-                return path;
-            return string.IsNullOrEmpty(songs) ? path : System.IO.Path.Combine(songs, path);
-        }
-
         string? best = null;
 
-        string? direct = makeAbsolute(p.DirectPath?.BeatmapFile);
+        string? direct = MakeAbsolute(p.DirectPath?.BeatmapFile, songs);
         if (direct != null)
         {
             if (System.IO.File.Exists(direct))
@@ -102,7 +93,7 @@ public class LiveSnapshot
 
         if (!string.IsNullOrEmpty(p.Folders?.Beatmap) && !string.IsNullOrEmpty(p.Files?.Beatmap))
         {
-            string? combined = makeAbsolute(System.IO.Path.Combine(p.Folders.Beatmap, p.Files.Beatmap));
+            string? combined = MakeAbsolute(System.IO.Path.Combine(p.Folders.Beatmap, p.Files.Beatmap), songs);
             if (combined != null)
             {
                 if (System.IO.File.Exists(combined))
@@ -112,5 +103,14 @@ public class LiveSnapshot
         }
 
         return best;
+    }
+
+    private static string? MakeAbsolute(string? path, string? songs)
+    {
+        if (string.IsNullOrEmpty(path))
+            return null;
+        if (System.IO.Path.IsPathRooted(path))
+            return path;
+        return string.IsNullOrEmpty(songs) ? path : System.IO.Path.Combine(songs, path);
     }
 }

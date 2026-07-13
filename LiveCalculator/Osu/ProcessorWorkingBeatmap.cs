@@ -13,7 +13,7 @@ public class ProcessorWorkingBeatmap : WorkingBeatmap
     private readonly Beatmap beatmap;
 
     public ProcessorWorkingBeatmap(string file)
-        : this(readFromFile(file))
+        : this(ReadFromFile(file))
     {
     }
 
@@ -24,7 +24,7 @@ public class ProcessorWorkingBeatmap : WorkingBeatmap
         beatmap.BeatmapInfo.Ruleset = LegacyHelper.GetRulesetFromLegacyId(beatmap.BeatmapInfo.Ruleset.OnlineID).RulesetInfo;
     }
 
-    private static Beatmap readFromFile(string filename)
+    private static Beatmap ReadFromFile(string filename)
     {
         using var stream = File.OpenRead(filename);
         using var reader = new LineBufferedReader(stream);

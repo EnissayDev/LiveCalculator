@@ -32,7 +32,7 @@ public class LiveDifficultyCalculator
     public void Prepare(LiveSnapshot snapshot)
     {
         prepared = null;
-        cancelTimed();
+        CancelTimed();
 
         if (string.IsNullOrEmpty(snapshot.BeatmapFile))
         {
@@ -50,7 +50,7 @@ public class LiveDifficultyCalculator
         {
             var ruleset = LegacyHelper.GetRulesetFromLegacyId(snapshot.RulesetId);
             var working = new ProcessorWorkingBeatmap(snapshot.BeatmapFile);
-            var mods = parseMods(ruleset, snapshot.Mods);
+            var mods = ParseMods(ruleset, snapshot.Mods);
 
             var playable = working.GetPlayableBeatmap(ruleset.RulesetInfo, mods);
 
@@ -67,14 +67,14 @@ public class LiveDifficultyCalculator
                 FullAttributes = full,
                 PerformanceCalculator = ruleset.CreatePerformanceCalculator(),
                 MaxCombo = playable.GetMaxCombo(),
-                Skills = extractSkills(difficultyCalculator)
+                Skills = ExtractSkills(difficultyCalculator)
             };
 
             Status = "";
 
             // Progressive per-position SR is expensive (CalculateTimed is ~O(n^2) on long maps),
             // so compute it off-thread. The main SR/PP is already available above.
-            startTimedComputation(snapshot);
+            StartTimedComputation(snapshot);
         }
         catch (Exception ex)
         {
@@ -83,7 +83,7 @@ public class LiveDifficultyCalculator
         }
     }
 
-    private void cancelTimed()
+    private void CancelTimed()
     {
         timedCts?.Cancel();
         timedCts?.Dispose();
@@ -91,7 +91,7 @@ public class LiveDifficultyCalculator
         timedData = null;
     }
 
-    private void startTimedComputation(LiveSnapshot snapshot)
+    private void StartTimedComputation(LiveSnapshot snapshot)
     {
         var cts = new CancellationTokenSource();
         timedCts = cts;
@@ -107,7 +107,7 @@ public class LiveDifficultyCalculator
                 // Fully isolated from the foreground calc: fresh beatmap, ruleset and mods.
                 var ruleset = LegacyHelper.GetRulesetFromLegacyId(rulesetId);
                 var working = new ProcessorWorkingBeatmap(file);
-                var mods = parseMods(ruleset, modAcronyms);
+                var mods = ParseMods(ruleset, modAcronyms);
 
                 var timed = ruleset.CreateDifficultyCalculator(working).CalculateTimed(mods, cts.Token);
 
@@ -151,7 +151,7 @@ public class LiveDifficultyCalculator
                 {
                     Accuracy = snapshot.Accuracy > 0 ? snapshot.Accuracy / 100.0 : 1.0,
                     MaxCombo = snapshot.MaxCombo,
-                    Statistics = buildStatistics(snapshot),
+                    Statistics = BuildStatistics(snapshot),
                     Mods = map.Mods
                 };
 
@@ -167,7 +167,7 @@ public class LiveDifficultyCalculator
         }
     }
 
-    private static IReadOnlyList<SkillSeries> extractSkills(DifficultyCalculator calculator)
+    private static IReadOnlyList<SkillSeries> ExtractSkills(DifficultyCalculator calculator)
     {
         if (calculator is not IExtendedDifficultyCalculator extended)
             return Array.Empty<SkillSeries>();
@@ -189,7 +189,7 @@ public class LiveDifficultyCalculator
         return series;
     }
 
-    private static Dictionary<HitResult, int> buildStatistics(LiveSnapshot s) => s.RulesetId switch
+    private static Dictionary<HitResult, int> BuildStatistics(LiveSnapshot s) => s.RulesetId switch
     {
         // osu!
         0 => new Dictionary<HitResult, int>
@@ -227,7 +227,7 @@ public class LiveDifficultyCalculator
         _ => new Dictionary<HitResult, int>()
     };
 
-    private static Mod[] parseMods(Ruleset ruleset, IReadOnlyList<string> acronyms)
+    private static Mod[] ParseMods(Ruleset ruleset, IReadOnlyList<string> acronyms)
     {
         var mods = new List<Mod>();
 

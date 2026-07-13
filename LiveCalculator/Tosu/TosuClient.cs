@@ -36,7 +36,7 @@ public class TosuClient : IDisposable
     {
         Stop();
         cts = new CancellationTokenSource();
-        _ = Task.Run(() => runLoop(cts.Token));
+        _ = Task.Run(() => RunLoop(cts.Token));
     }
 
     public void Stop()
@@ -46,7 +46,7 @@ public class TosuClient : IDisposable
         cts = null;
     }
 
-    private async Task runLoop(CancellationToken token)
+    private async Task RunLoop(CancellationToken token)
     {
         var buffer = new byte[1 << 20];
 
@@ -62,11 +62,11 @@ public class TosuClient : IDisposable
 
                 while (socket.State == WebSocketState.Open && !token.IsCancellationRequested)
                 {
-                    var message = await receiveMessage(socket, buffer, token).ConfigureAwait(false);
+                    var message = await ReceiveMessage(socket, buffer, token).ConfigureAwait(false);
                     if (message == null)
                         break;
 
-                    writeDebug(message);
+                    WriteDebug(message);
 
                     try
                     {
@@ -102,7 +102,7 @@ public class TosuClient : IDisposable
         }
     }
 
-    private void writeDebug(string message)
+    private void WriteDebug(string message)
     {
         if (string.IsNullOrEmpty(DebugLogPath))
             return;
@@ -121,7 +121,7 @@ public class TosuClient : IDisposable
         }
     }
 
-    private static async Task<string?> receiveMessage(ClientWebSocket socket, byte[] buffer, CancellationToken token)
+    private static async Task<string?> ReceiveMessage(ClientWebSocket socket, byte[] buffer, CancellationToken token)
     {
         var sb = new StringBuilder();
         WebSocketReceiveResult result;
