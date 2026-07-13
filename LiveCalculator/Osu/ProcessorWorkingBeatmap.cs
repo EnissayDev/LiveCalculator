@@ -10,7 +10,7 @@ namespace LiveCalculator.Osu;
 
 public class ProcessorWorkingBeatmap : WorkingBeatmap
 {
-    private readonly Beatmap beatmap;
+    private readonly Beatmap _beatmap;
 
     public ProcessorWorkingBeatmap(string file)
         : this(ReadFromFile(file))
@@ -20,7 +20,7 @@ public class ProcessorWorkingBeatmap : WorkingBeatmap
     private ProcessorWorkingBeatmap(Beatmap beatmap)
         : base(beatmap.BeatmapInfo, null)
     {
-        this.beatmap = beatmap;
+        _beatmap = beatmap;
         beatmap.BeatmapInfo.Ruleset = LegacyHelper.GetRulesetFromLegacyId(beatmap.BeatmapInfo.Ruleset.OnlineID).RulesetInfo;
     }
 
@@ -31,7 +31,7 @@ public class ProcessorWorkingBeatmap : WorkingBeatmap
         return Decoder.GetDecoder<Beatmap>(reader).Decode(reader);
     }
 
-    protected override IBeatmap GetBeatmap() => beatmap;
+    protected override IBeatmap GetBeatmap() => _beatmap;
     public override Texture GetBackground() => throw new System.NotImplementedException();
     protected override Track GetBeatmapTrack() => throw new System.NotImplementedException();
     protected override ISkin GetSkin() => throw new System.NotImplementedException();

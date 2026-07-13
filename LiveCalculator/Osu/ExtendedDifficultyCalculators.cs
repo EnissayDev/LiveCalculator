@@ -21,66 +21,66 @@ public interface IExtendedDifficultyCalculator
 
 public class ExtendedOsuDifficultyCalculator : OsuDifficultyCalculator, IExtendedDifficultyCalculator
 {
-    private Skill[] skills = [];
-    private DifficultyHitObject[] difficultyHitObjects = [];
+    private Skill[] _skills = [];
+    private DifficultyHitObject[] _difficultyHitObjects = [];
 
     public ExtendedOsuDifficultyCalculator(IRulesetInfo ruleset, IWorkingBeatmap beatmap) : base(ruleset, beatmap) { }
-    public Skill[] GetSkills() => skills;
-    public DifficultyHitObject[] GetDifficultyHitObjects() => difficultyHitObjects;
+    public Skill[] GetSkills() => _skills;
+    public DifficultyHitObject[] GetDifficultyHitObjects() => _difficultyHitObjects;
 
     protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, Mod[] mods)
-        => difficultyHitObjects = base.CreateDifficultyHitObjects(beatmap, mods).ToArray();
+        => _difficultyHitObjects = base.CreateDifficultyHitObjects(beatmap, mods).ToArray();
 
     protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods)
-        => skills = base.CreateSkills(beatmap, mods);
+        => _skills = base.CreateSkills(beatmap, mods);
 }
 
 public class ExtendedTaikoDifficultyCalculator : TaikoDifficultyCalculator, IExtendedDifficultyCalculator
 {
-    private Skill[] skills = [];
-    private DifficultyHitObject[] difficultyHitObjects = [];
+    private Skill[] _skills = [];
+    private DifficultyHitObject[] _difficultyHitObjects = [];
 
     public ExtendedTaikoDifficultyCalculator(IRulesetInfo ruleset, IWorkingBeatmap beatmap) : base(ruleset, beatmap) { }
-    public Skill[] GetSkills() => skills;
-    public DifficultyHitObject[] GetDifficultyHitObjects() => difficultyHitObjects;
+    public Skill[] GetSkills() => _skills;
+    public DifficultyHitObject[] GetDifficultyHitObjects() => _difficultyHitObjects;
 
     protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, Mod[] mods)
-        => difficultyHitObjects = base.CreateDifficultyHitObjects(beatmap, mods).ToArray();
+        => _difficultyHitObjects = base.CreateDifficultyHitObjects(beatmap, mods).ToArray();
 
     protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods)
-        => skills = base.CreateSkills(beatmap, mods);
+        => _skills = base.CreateSkills(beatmap, mods);
 }
 
 public class ExtendedCatchDifficultyCalculator : CatchDifficultyCalculator, IExtendedDifficultyCalculator
 {
-    private Skill[] skills = [];
-    private DifficultyHitObject[] difficultyHitObjects = [];
+    private Skill[] _skills = [];
+    private DifficultyHitObject[] _difficultyHitObjects = [];
 
     public ExtendedCatchDifficultyCalculator(IRulesetInfo ruleset, IWorkingBeatmap beatmap) : base(ruleset, beatmap) { }
-    public Skill[] GetSkills() => skills;
-    public DifficultyHitObject[] GetDifficultyHitObjects() => difficultyHitObjects;
+    public Skill[] GetSkills() => _skills;
+    public DifficultyHitObject[] GetDifficultyHitObjects() => _difficultyHitObjects;
 
     protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, Mod[] mods)
-        => difficultyHitObjects = base.CreateDifficultyHitObjects(beatmap, mods).ToArray();
+        => _difficultyHitObjects = base.CreateDifficultyHitObjects(beatmap, mods).ToArray();
 
     protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods)
-        => skills = base.CreateSkills(beatmap, mods);
+        => _skills = base.CreateSkills(beatmap, mods);
 }
 
 public class ExtendedManiaDifficultyCalculator : ManiaDifficultyCalculator, IExtendedDifficultyCalculator
 {
-    private Skill[] skills = [];
-    private DifficultyHitObject[] difficultyHitObjects = [];
+    private Skill[] _skills = [];
+    private DifficultyHitObject[] _difficultyHitObjects = [];
 
     public ExtendedManiaDifficultyCalculator(IRulesetInfo ruleset, IWorkingBeatmap beatmap) : base(ruleset, beatmap) { }
-    public Skill[] GetSkills() => skills;
-    public DifficultyHitObject[] GetDifficultyHitObjects() => difficultyHitObjects;
+    public Skill[] GetSkills() => _skills;
+    public DifficultyHitObject[] GetDifficultyHitObjects() => _difficultyHitObjects;
 
     protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, Mod[] mods)
-        => difficultyHitObjects = base.CreateDifficultyHitObjects(beatmap, mods).ToArray();
+        => _difficultyHitObjects = base.CreateDifficultyHitObjects(beatmap, mods).ToArray();
 
     protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods)
-        => skills = base.CreateSkills(beatmap, mods);
+        => _skills = base.CreateSkills(beatmap, mods);
 }
 
 public static class ExtendedCalculatorFactory

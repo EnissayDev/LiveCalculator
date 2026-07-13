@@ -11,7 +11,7 @@
         MinHeight="620" MinWidth="420"
         WindowStartupLocation="CenterScreen"
         Background="#171A1C"
-        FontFamily="pack://application:,,,/Assets/Fonts/#Torus">
+        FontFamily="pack://application:,,,/Assets/Fonts/#Poppins, Segoe UI">
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibility" />

@@ -20,18 +20,18 @@ public record LiveResult(double Stars, double? CurrentStars, bool CurrentReady, 
 
 public class LiveDifficultyCalculator
 {
-    private PreparedMap? prepared;
+    private PreparedMap? _prepared;
 
-    private CancellationTokenSource? timedCts;
-    private volatile TimedData? timedData;
+    private CancellationTokenSource? _timedCts;
+    private volatile TimedData? _timedData;
 
-    public string? PreparedKey => prepared?.Key;
+    public string? PreparedKey => _prepared?.Key;
 
     public string Status { get; private set; } = "Waiting for a beatmap…";
 
     public void Prepare(LiveSnapshot snapshot)
     {
-        prepared = null;
+        _prepared = null;
         CancelTimed();
 
         if (string.IsNullOrEmpty(snapshot.BeatmapFile))
@@ -58,7 +58,7 @@ public class LiveDifficultyCalculator
 
             var full = difficultyCalculator.Calculate(mods);
 
-            prepared = new PreparedMap
+            _prepared = new PreparedMap
             {
                 Key = snapshot.MapKey,
                 Ruleset = ruleset,
@@ -78,23 +78,23 @@ public class LiveDifficultyCalculator
         }
         catch (Exception ex)
         {
-            prepared = null;
+            _prepared = null;
             Status = $"Calc failed for {System.IO.Path.GetFileName(snapshot.BeatmapFile)}: {ex.GetType().Name}: {ex.Message}";
         }
     }
 
     private void CancelTimed()
     {
-        timedCts?.Cancel();
-        timedCts?.Dispose();
-        timedCts = null;
-        timedData = null;
+        _timedCts?.Cancel();
+        _timedCts?.Dispose();
+        _timedCts = null;
+        _timedData = null;
     }
 
     private void StartTimedComputation(LiveSnapshot snapshot)
     {
         var cts = new CancellationTokenSource();
-        timedCts = cts;
+        _timedCts = cts;
         string key = snapshot.MapKey;
         string file = snapshot.BeatmapFile!;
         int rulesetId = snapshot.RulesetId;
@@ -112,7 +112,7 @@ public class LiveDifficultyCalculator
                 var timed = ruleset.CreateDifficultyCalculator(working).CalculateTimed(mods, cts.Token);
 
                 if (!cts.Token.IsCancellationRequested)
-                    timedData = new TimedData(key, timed);
+                    _timedData = new TimedData(key, timed);
             }
             catch
             {
@@ -123,7 +123,7 @@ public class LiveDifficultyCalculator
 
     public LiveResult? CalculateLive(LiveSnapshot snapshot, bool includePp = true)
     {
-        var map = prepared;
+        var map = _prepared;
         if (map == null || map.Key != snapshot.MapKey)
             return null;
 
@@ -132,7 +132,7 @@ public class LiveDifficultyCalculator
             double stars = map.FullAttributes.StarRating;
             int judged = snapshot.JudgedObjects;
 
-            var timed = timedData;
+            var timed = _timedData;
             bool currentReady = timed != null && timed.Key == map.Key;
             double? currentStars = null;
 

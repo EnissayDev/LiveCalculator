@@ -5,18 +5,18 @@ namespace LiveCalculator;
 
 public partial class MainWindow : Window
 {
-    private readonly MainViewModel viewModel = new();
+    private readonly MainViewModel _viewModel = new();
 
-    private double savedWidth;
-    private double savedHeight;
+    private double _savedWidth;
+    private double _savedHeight;
 
     public MainWindow()
     {
         InitializeComponent();
-        DataContext = viewModel;
+        DataContext = _viewModel;
 
-        Loaded += (_, _) => viewModel.Start();
-        Closed += (_, _) => viewModel.Stop();
+        Loaded += (_, _) => _viewModel.Start();
+        Closed += (_, _) => _viewModel.Stop();
     }
 
     // Toggles a small always-on-top "overlay" that only shows official SR, the pre-rework delta,
@@ -24,12 +24,12 @@ public partial class MainWindow : Window
     // per-frame PP + strain-graph work (see MainViewModel.CompactMode).
     private void CompactToggle_Click(object sender, RoutedEventArgs e)
     {
-        viewModel.CompactMode = !viewModel.CompactMode;
+        _viewModel.CompactMode = !_viewModel.CompactMode;
 
-        if (viewModel.CompactMode)
+        if (_viewModel.CompactMode)
         {
-            savedWidth = Width;
-            savedHeight = Height;
+            _savedWidth = Width;
+            _savedHeight = Height;
 
             MinWidth = 0;
             MinHeight = 0;
@@ -45,8 +45,8 @@ public partial class MainWindow : Window
             ResizeMode = ResizeMode.CanResize;
             MinWidth = 420;
             MinHeight = 620;
-            Width = savedWidth;
-            Height = savedHeight;
+            Width = _savedWidth;
+            Height = _savedHeight;
         }
     }
 }

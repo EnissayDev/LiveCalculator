@@ -32,3 +32,10 @@ artifacts/
 # Misc
 *.log
 *.tmp
+
+# Per-user osu! source path (see osu-source.props.example)
+osu-source.props
+
+# The bundled UI font is Poppins (SIL Open Font License, free to redistribute) and IS committed.
+# Guard against accidentally committing proprietary fonts (e.g. Torus .otf) dropped in locally.
+LiveCalculator/Assets/Fonts/*.otf

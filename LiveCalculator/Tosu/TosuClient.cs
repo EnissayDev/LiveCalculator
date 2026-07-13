@@ -17,9 +17,9 @@ public class TosuClient : IDisposable
         NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString
     };
 
-    private readonly Uri uri;
-    private CancellationTokenSource? cts;
-    private DateTime lastRawWrite = DateTime.MinValue;
+    private readonly Uri _uri;
+    private CancellationTokenSource? _cts;
+    private DateTime _lastRawWrite = DateTime.MinValue;
 
     public string? DebugLogPath { get; set; }
 
@@ -29,21 +29,21 @@ public class TosuClient : IDisposable
 
     public TosuClient(string? uri = null)
     {
-        this.uri = new Uri(uri ?? DefaultUri);
+        _uri = new Uri(uri ?? DefaultUri);
     }
 
     public void Start()
     {
         Stop();
-        cts = new CancellationTokenSource();
-        _ = Task.Run(() => RunLoop(cts.Token));
+        _cts = new CancellationTokenSource();
+        _ = Task.Run(() => RunLoop(_cts.Token));
     }
 
     public void Stop()
     {
-        cts?.Cancel();
-        cts?.Dispose();
-        cts = null;
+        _cts?.Cancel();
+        _cts?.Dispose();
+        _cts = null;
     }
 
     private async Task RunLoop(CancellationToken token)
@@ -57,7 +57,7 @@ public class TosuClient : IDisposable
             try
             {
                 ConnectionChanged?.Invoke(false, "Connecting to tosu…");
-                await socket.ConnectAsync(uri, token).ConfigureAwait(false);
+                await socket.ConnectAsync(_uri, token).ConfigureAwait(false);
                 ConnectionChanged?.Invoke(true, "Connected to tosu");
 
                 while (socket.State == WebSocketState.Open && !token.IsCancellationRequested)
@@ -107,10 +107,10 @@ public class TosuClient : IDisposable
         if (string.IsNullOrEmpty(DebugLogPath))
             return;
 
-        if ((DateTime.UtcNow - lastRawWrite).TotalSeconds < 1)
+        if ((DateTime.UtcNow - _lastRawWrite).TotalSeconds < 1)
             return;
 
-        lastRawWrite = DateTime.UtcNow;
+        _lastRawWrite = DateTime.UtcNow;
 
         try
         {

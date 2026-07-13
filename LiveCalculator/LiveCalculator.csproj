@@ -14,15 +14,14 @@
          Location of the osu!lazer source tree (the enissay rework, branch enissay-mania-sr-rework).
          Live SR/PP is computed against this source, exactly like osutoolsenissayrework/PerformanceCalculator.
 
-         There is NO hardcoded path any more. To build, point OsuSourceDir at your checkout via ONE of:
+         There is NO hardcoded path. To build, point OsuSourceDir at your checkout via ONE of:
            1. Copy osu-source.props.example -> osu-source.props and edit the path (git-ignored, per-user).
            2. Set the OSU_SOURCE_DIR environment variable to your checkout.
-         If neither is set it falls back to a sibling 'osu2' folder next to this repo (original dev setup).
+         If neither is provided the build fails with a clear message (see CheckOsuSource below).
          ========================================================================================== -->
     <Import Project="osu-source.props" Condition="Exists('osu-source.props')" />
     <PropertyGroup>
         <OsuSourceDir Condition="'$(OsuSourceDir)' == ''">$(OSU_SOURCE_DIR)</OsuSourceDir>
-        <OsuSourceDir Condition="'$(OsuSourceDir)' == ''">$(MSBuildThisFileDirectory)..\..\osu2</OsuSourceDir>
     </PropertyGroup>
 
     <Target Name="CheckOsuSource" BeforeTargets="ResolveProjectReferences;CollectPackageReferences">
@@ -38,8 +37,10 @@
         <ProjectReference Include="$(OsuSourceDir)\osu.Game\osu.Game.csproj" />
     </ItemGroup>
 
-    <!-- Torus is osu!'s UI font (same as PerformanceCalculatorGUI). Embedded so it ships with the app. -->
+    <!-- Bundled UI font (Poppins, SIL OFL). Embedded so it ships with the app.
+         *.otf is also included so a locally-provided font can be dropped in without editing this file. -->
     <ItemGroup>
+        <Resource Include="Assets\Fonts\*.ttf" />
         <Resource Include="Assets\Fonts\*.otf" />
     </ItemGroup>
 

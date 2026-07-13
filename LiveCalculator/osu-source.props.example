@@ -1,0 +1,12 @@
+<!--
+  Copy this file to "osu-source.props" (same folder) and set OsuSourceDir to the full path of your
+  local osu!lazer source checkout (the enissay SR rework, branch enissay-mania-sr-rework).
+
+  osu-source.props is git-ignored, so your local path stays out of the repo.
+  Alternatively, set the OSU_SOURCE_DIR environment variable instead of using this file.
+-->
+<Project>
+    <PropertyGroup>
+        <OsuSourceDir>C:\path\to\your\osu\checkout</OsuSourceDir>
+    </PropertyGroup>
+</Project>
